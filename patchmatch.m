@@ -3,6 +3,7 @@
 %       img_src - input source image (RGB/Grayscale in double datatype)
 %       img_dst - input destination image (RGB/Grayscale in double datatype) (default - img_src)
 %       patchsize - size of search patch (default - 5)
+%       nnk - number of nearest neighbours (default - 5)
 %       searchradius - patch search radius (default - 10)
 %       mask - patch distance weight mask (size - patchsize X patchsize)(default - ones)
 %       searchstep - patch search step (default - 2)
