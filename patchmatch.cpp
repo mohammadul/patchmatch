@@ -292,9 +292,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
     if(patchsize>min(IMG_DIMS_DST[0], IMG_DIMS_DST[1])) mexErrMsgTxt("PATCHSIZE size is greater than IMG_DST size.");
 
-    mexPrintf("Src Img size : %Ld %Ld %Ld\n", IMG_DIMS_SRC[0], IMG_DIMS_SRC[1], IMG_DIMS_SRC[2]);
-    mexPrintf("Dst Img size : %Ld %Ld %Ld\n", IMG_DIMS_DST[0], IMG_DIMS_DST[1], IMG_DIMS_DST[2]);
-    mexPrintf("Patch size : %Ld, Step size: %Ld, Search radius: %Ld\n", patchsize, searchstep, searchradius);
+    mexPrintf("Src Img size : %" FMT64 "d %" FMT64 "d %" FMT64 "d\n", IMG_DIMS_SRC[0], IMG_DIMS_SRC[1], IMG_DIMS_SRC[2]);
+    mexPrintf("Dst Img size : %" FMT64 "d %" FMT64 "d %" FMT64 "d\n", IMG_DIMS_DST[0], IMG_DIMS_DST[1], IMG_DIMS_DST[2]);
+    mexPrintf("Patch size : %" FMT64 "d, Step size: %" FMT64 "d, Search radius: %" FMT64 "d\n", patchsize, searchstep, searchradius);
     if(IMG_DIMS_SRC[2]==1) mexPrintf("Type: Grayscale\n");
     if(IMG_DIMS_SRC[2]==3) mexPrintf("Type: Color\n");
     mexEvalString("drawnow;");
