@@ -36,7 +36,7 @@ while true
         hold off;
         figure(h);
         for k = find(h2~=0)
-            delete(h2(k));
+            delete(h2(k,1));
         end
         hold on;
     
@@ -47,12 +47,12 @@ while true
         
         % now draw
         figure(h);
-        h2 = zeros(length(nd));
+        h2 = zeros(length(nd),1);
         [~,ndi] = sort(nd); 
         ndim = max(ndi);
         for k = 1:length(nd)
             color = [(1-(find(ndi==k,1,'first')/ndim)^0.6) 0.15 0.15];
-            h2(k) = rectangle('Position',[nx(k) ny(k) patchsize patchsize],'LineWidth', 2,'EdgeColor', color);
+            h2(k,1) = rectangle('Position',[nx(k) ny(k) patchsize patchsize],'LineWidth', 2,'EdgeColor', color);
         end
         
         % reset
