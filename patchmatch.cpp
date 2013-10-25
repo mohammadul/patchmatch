@@ -86,22 +86,22 @@ template <typename T>vector<T> sort_from_ref( vector<T> const& in, vector<pair<D
     return ret;
 }
 
-double blockmatchgray(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
-double blockmatchcolor(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
-double blockmatchgray_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
-double blockmatchcolor_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
-double blockmatchgray_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
-double blockmatchcolor_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
+__inline double blockmatchgray(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
+__inline double blockmatchcolor(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
+__inline double blockmatchgray_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
+__inline double blockmatchcolor_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
+__inline double blockmatchgray_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
+__inline double blockmatchcolor_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
 
-double blockmatchgray_cmu(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
-double blockmatchcolor_cmu(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
+__inline double blockmatchgray_cmu(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
+__inline double blockmatchcolor_cmu(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
 
-double blockmatchgrayi(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold);
-double blockmatchcolori(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold);
-double blockmatchgrayi_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold);
-double blockmatchcolori_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold);
-double blockmatchgrayi_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold);
-double blockmatchcolori_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold);
+__inline double blockmatchgrayi(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold);
+__inline double blockmatchcolori(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold);
+__inline double blockmatchgrayi_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold);
+__inline double blockmatchcolori_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold);
+__inline double blockmatchgrayi_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold);
+__inline double blockmatchcolori_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold);
 
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
@@ -1492,7 +1492,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 }
 
 
-double blockmatchgray(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
+__inline double blockmatchgray(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
 {
     DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti;
     double dist = 0.0;
@@ -1509,7 +1509,7 @@ double blockmatchgray(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, do
     return dist;
 }
 
-double blockmatchcolor(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
+__inline double blockmatchcolor(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
 {
     DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti, numels_src = imgsM*imgsN, numels_dst = imgtM*imgtN;
     double dist = 0.0;
@@ -1554,7 +1554,7 @@ double blockmatchcolor(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, d
 
 
 
-double blockmatchgray_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
+__inline double blockmatchgray_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
 {
     DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti;
     double dist = 0.0;
@@ -1571,7 +1571,7 @@ double blockmatchgray_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj
     return dist;
 }
 
-double blockmatchcolor_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
+__inline double blockmatchcolor_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
 {
     DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti, numels_src = imgsM*imgsN, numels_dst = imgtM*imgtN;
     double dist = 0.0;
@@ -1615,7 +1615,7 @@ double blockmatchcolor_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE t
 }
 
 
-double blockmatchgray_cmu(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
+__inline double blockmatchgray_cmu(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
 {
     DATA_TYPE i, j, src_idx = sj*imgsM+si, p_m_one = patchsize-1;
     double dist = 0.0, tempxx, tempxy, tempyy;
@@ -1650,7 +1650,7 @@ double blockmatchgray_cmu(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj
     return dist;
 }
 
-double blockmatchcolor_cmu(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
+__inline double blockmatchcolor_cmu(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
 {
     DATA_TYPE i, j, src_idx = sj*imgsM+si, p_m_one = patchsize-1, numels = imgsM*imgsN;
     double dist = 0.0, tempxx, tempxy, tempyy;
@@ -1726,7 +1726,7 @@ double blockmatchcolor_cmu(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE t
 
 
 
-double blockmatchgray_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
+__inline double blockmatchgray_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
 {
     DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti;
     double dist = 0.0;
@@ -1743,7 +1743,7 @@ double blockmatchgray_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYP
     return dist;
 }
 
-double blockmatchcolor_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
+__inline double blockmatchcolor_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
 {
     DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti, numels_src = imgsM*imgsN, numels_dst = imgtM*imgtN;
     double dist = 0.0;
@@ -1789,7 +1789,7 @@ double blockmatchcolor_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TY
 
 
 
-double blockmatchgrayi(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold)
+__inline double blockmatchgrayi(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold)
 {
     DATA_TYPE i, j, src_idx = sj*imgM+si, tgt_idx = tj*imgM+ti;
     double dist = 0.0, den = 0, temp;
@@ -1813,7 +1813,7 @@ double blockmatchgrayi(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, d
     return dist;
 }
 
-double blockmatchcolori(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold)
+__inline double blockmatchcolori(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold)
 {
     DATA_TYPE i, j, src_idx = sj*imgM+si, tgt_idx = tj*imgM+ti, numels = imgM*imgN;
     double dist = 0.0, den = 0, temp;
@@ -1874,7 +1874,7 @@ double blockmatchcolori(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, 
 }
 
 
-double blockmatchgrayi_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold)
+__inline double blockmatchgrayi_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold)
 {
     DATA_TYPE i, j, src_idx = sj*imgM+si, tgt_idx = tj*imgM+ti;
     double dist = 0.0, den = 0, temp;
@@ -1898,7 +1898,7 @@ double blockmatchgrayi_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE t
     return dist;
 }
 
-double blockmatchcolori_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold)
+__inline double blockmatchcolori_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold)
 {
     DATA_TYPE i, j, src_idx = sj*imgM+si, tgt_idx = tj*imgM+ti, numels = imgM*imgN;
     double dist = 0.0, den = 0, temp;
@@ -1959,7 +1959,7 @@ double blockmatchcolori_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE 
 }
 
 
-double blockmatchgrayi_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold)
+__inline double blockmatchgrayi_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold)
 {
     DATA_TYPE i, j, src_idx = sj*imgM+si, tgt_idx = tj*imgM+ti;
     double dist = 0.0, den = 0, temp;
@@ -1983,7 +1983,7 @@ double blockmatchgrayi_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TY
     return dist;
 }
 
-double blockmatchcolori_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold)
+__inline double blockmatchcolori_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img, DATA_TYPE patchsize, DATA_TYPE imgM, DATA_TYPE imgN, double threshold)
 {
     DATA_TYPE i, j, src_idx = sj*imgM+si, tgt_idx = tj*imgM+ti, numels = imgM*imgN;
     double dist = 0.0, den = 0, temp;
