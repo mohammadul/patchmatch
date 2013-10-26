@@ -339,9 +339,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
                         endy = (endy<(Nt-patchsize))?endy: (Nt-patchsize);
 
-                        for (DATA_TYPE nj = starty; nj<=endy; nj+=searchstep)
+                        for(DATA_TYPE nj = starty; nj<=endy; nj+=searchstep)
                         {
-                            for (DATA_TYPE ni = startx; ni<=endx; ni+=searchstep)
+                            for(DATA_TYPE ni = startx; ni<=endx; ni+=searchstep)
                             {
                                 if(si!=ni || sj!=nj||includeself)
                                 {
@@ -358,23 +358,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
 
                         DATA_TYPE n = 0;
-                        for (vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
+                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
                         sort(order.begin(), order.end(), ordering());
 
                         vector<double> sorted_distall = sort_from_ref(distall, order);
                         vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        int lmax = (nnk<static_cast<int>(sorted_distall.size()))? nnk: static_cast<int>(sorted_distall.size());
-                        for(int l=0; l<lmax; ++l)
+                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
+                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+                        for(DATA_TYPE l=0; l<lmax; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
+                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
+                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
+                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
                         }
-                        for(int l=lmax; l<nnk; ++l)
+                        for(DATA_TYPE l=lmax; l<nnk; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                            nnf[lidx+l*3*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                         }
                     }
                 }
@@ -408,9 +409,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
                         endy = (endy<(Nt-patchsize))?endy: (Nt-patchsize);
 
-                        for (DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
+                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
                         {
-                            for (DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
+                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
                             {
                                 if(si!=ni || sj!=nj||includeself)
                                 {
@@ -427,23 +428,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
 
                         DATA_TYPE n = 0;
-                        for (vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
+                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
                         sort(order.begin(), order.end(), ordering());
 
                         vector<double> sorted_distall = sort_from_ref(distall, order);
                         vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        int lmax = (nnk<static_cast<int>(sorted_distall.size()))? nnk: static_cast<int>(sorted_distall.size());
-                        for(int l=0; l<lmax; ++l)
+                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
+                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+                        for(DATA_TYPE l=0; l<lmax; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
+                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
+                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
+                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
                         }
-                        for(int l=lmax; l<nnk; ++l)
+                        for(DATA_TYPE l=lmax; l<nnk; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                            nnf[lidx+l*3*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                         }
                     }
                 }
@@ -494,9 +496,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
                         endy = (endy<(Nt-patchsize))?endy: (Nt-patchsize);
 
-                        for (DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
+                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
                         {
-                            for (DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
+                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
                             {
                                 if(si!=ni || sj!=nj||includeself)
                                 {
@@ -513,23 +515,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
 
                         DATA_TYPE n = 0;
-                        for (vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
+                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
                         sort(order.begin(), order.end(), ordering());
 
                         vector<double> sorted_distall = sort_from_ref(distall, order);
                         vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        int lmax = (nnk<static_cast<int>(sorted_distall.size()))? nnk: static_cast<int>(sorted_distall.size());
-                        for(int l=0; l<lmax; ++l)
+                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
+                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+                        for(DATA_TYPE l=0; l<lmax; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
+                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
+                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
+                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
                         }
-                        for(int l=lmax; l<nnk; ++l)
+                        for(DATA_TYPE l=lmax; l<nnk; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                            nnf[lidx+l*3*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                         }
                     }
                 }
@@ -563,9 +566,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
                         endy = (endy<(Nt-patchsize))?endy: (Nt-patchsize);
 
-                        for (DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
+                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
                         {
-                            for (DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
+                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
                             {
                                 if(si!=ni || sj!=nj||includeself)
                                 {
@@ -582,23 +585,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
 
                         DATA_TYPE n = 0;
-                        for (vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
+                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
                         sort(order.begin(), order.end(), ordering());
 
                         vector<double> sorted_distall = sort_from_ref(distall, order);
                         vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        int lmax = (nnk<static_cast<int>(sorted_distall.size()))? nnk: static_cast<int>(sorted_distall.size());
-                        for(int l=0; l<lmax; ++l)
+                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
+                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+                        for(DATA_TYPE l=0; l<lmax; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
+                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
+                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
+                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
                         }
-                        for(int l=lmax; l<nnk; ++l)
+                        for(DATA_TYPE l=lmax; l<nnk; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                            nnf[lidx+l*3*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                         }
                     }
                 }
@@ -649,9 +653,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
                         endy = (endy<(Nt-patchsize))?endy: (Nt-patchsize);
 
-                        for (DATA_TYPE nj = starty; nj<=endy; nj+=searchstep)
+                        for(DATA_TYPE nj = starty; nj<=endy; nj+=searchstep)
                         {
-                            for (DATA_TYPE ni = startx; ni<=endx; ni+=searchstep)
+                            for(DATA_TYPE ni = startx; ni<=endx; ni+=searchstep)
                             {
                                 if(si!=ni || sj!=nj||includeself)
                                 {
@@ -668,23 +672,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
 
                         DATA_TYPE n = 0;
-                        for (vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
+                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
                         sort(order.begin(), order.end(), ordering());
 
                         vector<double> sorted_distall = sort_from_ref(distall, order);
                         vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        int lmax = (nnk<static_cast<int>(sorted_distall.size()))? nnk: static_cast<int>(sorted_distall.size());
-                        for(int l=0; l<lmax; ++l)
+                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
+                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+                        for(DATA_TYPE l=0; l<lmax; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
+                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
+                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
+                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
                         }
-                        for(int l=lmax; l<nnk; ++l)
+                        for(DATA_TYPE l=lmax; l<nnk; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                            nnf[lidx+l*3*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                         }
                     }
                 }
@@ -718,9 +723,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
                         endy = (endy<(Nt-patchsize))?endy: (Nt-patchsize);
 
-                        for (DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
+                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
                         {
-                            for (DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
+                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
                             {
                                 if(si!=ni || sj!=nj||includeself)
                                 {
@@ -737,23 +742,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
 
                         DATA_TYPE n = 0;
-                        for (vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
+                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
                         sort(order.begin(), order.end(), ordering());
 
                         vector<double> sorted_distall = sort_from_ref(distall, order);
                         vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        int lmax = (nnk<static_cast<int>(sorted_distall.size()))? nnk: static_cast<int>(sorted_distall.size());
-                        for(int l=0; l<lmax; ++l)
+                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
+                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+                        for(DATA_TYPE l=0; l<lmax; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
+                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
+                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
+                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
                         }
-                        for(int l=lmax; l<nnk; ++l)
+                        for(DATA_TYPE l=lmax; l<nnk; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                            nnf[lidx+l*3*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                         }
                     }
                 }
@@ -804,9 +810,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
                         endy = (endy<(Nt-patchsize))?endy: (Nt-patchsize);
 
-                        for (DATA_TYPE nj = starty; nj<=endy; nj+=searchstep)
+                        for(DATA_TYPE nj = starty; nj<=endy; nj+=searchstep)
                         {
-                            for (DATA_TYPE ni = startx; ni<=endx; ni+=searchstep)
+                            for(DATA_TYPE ni = startx; ni<=endx; ni+=searchstep)
                             {
                                 if(si!=ni || sj!=nj||includeself)
                                 {
@@ -823,23 +829,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
 
                         DATA_TYPE n = 0;
-                        for (vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
+                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
                         sort(order.begin(), order.end(), ordering());
 
                         vector<double> sorted_distall = sort_from_ref(distall, order);
                         vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        int lmax = (nnk<static_cast<int>(sorted_distall.size()))? nnk: static_cast<int>(sorted_distall.size());
-                        for(int l=0; l<lmax; ++l)
+                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
+                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+                        for(DATA_TYPE l=0; l<lmax; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
+                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
+                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
+                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
                         }
-                        for(int l=lmax; l<nnk; ++l)
+                        for(DATA_TYPE l=lmax; l<nnk; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                            nnf[lidx+l*3*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                         }
                     }
                 }
@@ -873,9 +880,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
                         endy = (endy<(Nt-patchsize))?endy: (Nt-patchsize);
 
-                        for (DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
+                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
                         {
-                            for (DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
+                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
                             {
                                 if(si!=ni || sj!=nj||includeself)
                                 {
@@ -892,23 +899,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
 
                         DATA_TYPE n = 0;
-                        for (vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
+                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
                         sort(order.begin(), order.end(), ordering());
 
                         vector<double> sorted_distall = sort_from_ref(distall, order);
                         vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        int lmax = (nnk<static_cast<int>(sorted_distall.size()))? nnk: static_cast<int>(sorted_distall.size());
-                        for(int l=0; l<lmax; ++l)
+                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
+                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+                        for(DATA_TYPE l=0; l<lmax; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
+                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
+                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
+                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
                         }
-                        for(int l=lmax; l<nnk; ++l)
+                        for(DATA_TYPE l=lmax; l<nnk; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                            nnf[lidx+l*3*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                         }
                     }
                 }
@@ -947,11 +955,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         {
             for(DATA_TYPE si=0; si<IMG_DIMS_SRC[0]; ++si)
             {
-                for (DATA_TYPE l=0; l<nnk; ++l)
+                DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+                for(DATA_TYPE l=0; l<nnk; ++l)
                 {
-                    nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                    nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                    nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                    nnf[lidx+l*3*nelems] = LNEG_VAL;
+                    nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                    nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                 }
             }
         }
@@ -963,11 +972,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         {
             for(DATA_TYPE si=max_X+1; si<IMG_DIMS_SRC[0]; ++si)
             {
-                for (DATA_TYPE l=0; l<nnk; ++l)
+                DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+                for(DATA_TYPE l=0; l<nnk; ++l)
                 {
-                    nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                    nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                    nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                    nnf[lidx+l*3*nelems] = LNEG_VAL;
+                    nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                    nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                 }
             }
         }
@@ -1006,9 +1016,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         endy = sj+searchradius;
                         endy = (endy<(N-patchsize))?endy: (N-patchsize);
 
-                        for (DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
+                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
                         {
-                            for (DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
+                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
                             {
                                 if(si!=ni || sj!=nj||includeself)
                                 {
@@ -1025,23 +1035,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
 
                         DATA_TYPE n = 0;
-                        for (vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
+                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
                         sort(order.begin(), order.end(), ordering());
 
                         vector<double> sorted_distall = sort_from_ref(distall, order);
                         vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        int lmax = (nnk<static_cast<int>(sorted_distall.size()))? nnk: static_cast<int>(sorted_distall.size());
-                        for(int l=0; l<lmax; ++l)
+                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
+                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+                        for(DATA_TYPE l=0; l<lmax; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
+                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
+                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
+                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
                         }
-                        for(int l=lmax; l<nnk; ++l)
+                        for(DATA_TYPE l=lmax; l<nnk; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                            nnf[lidx+l*3*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                         }
                     }
                 }
@@ -1074,9 +1085,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         endy = sj+searchradius;
                         endy = (endy<(N-patchsize))?endy: (N-patchsize);
 
-                        for (DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
+                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
                         {
-                            for (DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
+                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
                             {
                                 if(si!=ni || sj!=nj||includeself)
                                 {
@@ -1093,23 +1104,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
 
                         DATA_TYPE n = 0;
-                        for (vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
+                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
                         sort(order.begin(), order.end(), ordering());
 
                         vector<double> sorted_distall = sort_from_ref(distall, order);
                         vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        int lmax = (nnk<static_cast<int>(sorted_distall.size()))? nnk: static_cast<int>(sorted_distall.size());
-                        for(int l=0; l<lmax; ++l)
+                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
+                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+                        for(DATA_TYPE l=0; l<lmax; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
+                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
+                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
+                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
                         }
-                        for(int l=lmax; l<nnk; ++l)
+                        for(DATA_TYPE l=lmax; l<nnk; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                            nnf[lidx+l*3*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                         }
                     }
                 }
@@ -1160,9 +1172,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         endy = sj+searchradius;
                         endy = (endy<(N-patchsize))?endy: (N-patchsize);
 
-                        for (DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
+                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
                         {
-                            for (DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
+                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
                             {
                                 if(si!=ni || sj!=nj||includeself)
                                 {
@@ -1179,23 +1191,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
 
                         DATA_TYPE n = 0;
-                        for (vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
+                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
                         sort(order.begin(), order.end(), ordering());
 
                         vector<double> sorted_distall = sort_from_ref(distall, order);
                         vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        int lmax = (nnk<static_cast<int>(sorted_distall.size()))? nnk: static_cast<int>(sorted_distall.size());
-                        for(int l=0; l<lmax; ++l)
+                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
+                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+                        for(DATA_TYPE l=0; l<lmax; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
+                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
+                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
+                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
                         }
-                        for(int l=lmax; l<nnk; ++l)
+                        for(DATA_TYPE l=lmax; l<nnk; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                            nnf[lidx+l*3*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                         }
                     }
                 }
@@ -1228,9 +1241,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         endy = sj+searchradius;
                         endy = (endy<(N-patchsize))?endy: (N-patchsize);
 
-                        for (DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
+                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
                         {
-                            for (DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
+                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
                             {
                                 if(si!=ni || sj!=nj||includeself)
                                 {
@@ -1247,23 +1260,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
 
                         DATA_TYPE n = 0;
-                        for (vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
+                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
                         sort(order.begin(), order.end(), ordering());
 
                         vector<double> sorted_distall = sort_from_ref(distall, order);
                         vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        int lmax = (nnk<static_cast<int>(sorted_distall.size()))? nnk: static_cast<int>(sorted_distall.size());
-                        for(int l=0; l<lmax; ++l)
+                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
+                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+                        for(DATA_TYPE l=0; l<lmax; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
+                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
+                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
+                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
                         }
-                        for(int l=lmax; l<nnk; ++l)
+                        for(DATA_TYPE l=lmax; l<nnk; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                            nnf[lidx+l*3*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                         }
                     }
                 }
@@ -1313,9 +1327,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         endy = sj+searchradius;
                         endy = (endy<(N-patchsize))?endy: (N-patchsize);
 
-                        for (DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
+                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
                         {
-                            for (DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
+                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
                             {
                                 if(si!=ni || sj!=nj||includeself)
                                 {
@@ -1337,18 +1351,19 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
                         vector<double> sorted_distall = sort_from_ref(distall, order);
                         vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        int lmax = (nnk<static_cast<int>(sorted_distall.size()))? nnk: static_cast<int>(sorted_distall.size());
-                        for(int l=0; l<lmax; ++l)
+                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
+                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+                        for(DATA_TYPE l=0; l<lmax; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
+                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
+                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
+                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
                         }
                         for(int l=lmax; l<nnk; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                            nnf[lidx+l*3*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                         }
                     }
                 }
@@ -1381,9 +1396,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         endy = sj+searchradius;
                         endy = (endy<(N-patchsize))?endy: (N-patchsize);
 
-                        for (DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
+                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
                         {
-                            for (DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
+                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
                             {
                                 if(si!=ni || sj!=nj||includeself)
                                 {
@@ -1400,23 +1415,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                         vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
 
                         DATA_TYPE n = 0;
-                        for (vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
+                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
                         sort(order.begin(), order.end(), ordering());
 
                         vector<double> sorted_distall = sort_from_ref(distall, order);
                         vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        int lmax = (nnk<static_cast<int>(sorted_distall.size()))? nnk: static_cast<int>(sorted_distall.size());
-                        for(int l=0; l<lmax; ++l)
+                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
+                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+                        for(DATA_TYPE l=0; l<lmax; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
+                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
+                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
+                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
                         }
-                        for(int l=lmax; l<nnk; ++l)
+                        for(DATA_TYPE l=lmax; l<nnk; ++l)
                         {
-                            nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                            nnf[lidx+l*3*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                         }
                     }
                 }
@@ -1455,11 +1471,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         {
             for(DATA_TYPE si=0; si<IMG_DIMS_SRC[0]; ++si)
             {
+                DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
                 for (DATA_TYPE l=0; l<nnk; ++l)
                 {
-                    nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                    nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                    nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                    nnf[lidx+l*3*nelems] = LNEG_VAL;
+                    nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                    nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                 }
             }
         }
@@ -1471,11 +1488,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         {
             for(DATA_TYPE si=max_X+1; si<IMG_DIMS_SRC[0]; ++si)
             {
+                DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
                 for (DATA_TYPE l=0; l<nnk; ++l)
                 {
-                    nnf[si+sj*IMG_DIMS_SRC[0]+l*3*nelems] = LNEG_VAL;
-                    nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+1)*nelems] = LNEG_VAL;
-                    nnf[si+sj*IMG_DIMS_SRC[0]+(l*3+2)*nelems] = LPOS_VAL;
+                    nnf[lidx+l*3*nelems] = LNEG_VAL;
+                    nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                    nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
                 }
             }
         }
