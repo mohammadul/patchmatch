@@ -18,4 +18,3 @@ eval(['mex patchmatch.cpp' str]);
 disp('Done.');
 end
 
-
