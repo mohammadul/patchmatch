@@ -260,7 +260,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     if(patchsize>min(IMG_DIMS_SRC[0], IMG_DIMS_SRC[1])) mexErrMsgTxt("PATCHSIZE size is greater than IMG_SRC size.");
 
     /* get pointer to image and its dimensions */
-    if(incomplete || mxIsEmpty(IMG_DST_IN))
+    if(incomplete || nrhs<2 || mxIsEmpty(IMG_DST_IN))
     {
         img_dst = mxGetPr(IMG_SRC_IN);
         IMG_DIMS_DST_ORI = mxGetDimensions(IMG_SRC_IN);
