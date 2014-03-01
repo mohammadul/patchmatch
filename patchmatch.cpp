@@ -122,7 +122,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     /* check all arguments one by one if valid or set default if empty */
 
     if(!IS_REAL_2D_OR_3D_FULL_DOUBLE(IMG_SRC_IN)||mxIsEmpty(IMG_SRC_IN)) mexErrMsgTxt("IMG_SRC must be a real 2D or 3D full array.");
-    if(!IS_REAL_2D_OR_3D_FULL_DOUBLE(IMG_DST_IN)&& !mxIsEmpty(IMG_DST_IN)) mexErrMsgTxt("IMG_DST must be a real 2D or 3D full array.");
+    if(nrhs>1 && !IS_REAL_2D_OR_3D_FULL_DOUBLE(IMG_DST_IN)&& !mxIsEmpty(IMG_DST_IN)) mexErrMsgTxt("IMG_DST must be a real 2D or 3D full array.");
 
     if(nrhs<11) disttype = 2;
     else
@@ -260,7 +260,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     if(patchsize>min(IMG_DIMS_SRC[0], IMG_DIMS_SRC[1])) mexErrMsgTxt("PATCHSIZE size is greater than IMG_SRC size.");
 
     /* get pointer to image and its dimensions */
-    if(incomplete || nrhs<2 || mxIsEmpty(IMG_DST_IN))
+    if(incomplete || nrhs<2)
+    {
+        img_dst = mxGetPr(IMG_SRC_IN);
+        IMG_DIMS_DST_ORI = mxGetDimensions(IMG_SRC_IN);
+        ndims_dst = mxGetNumberOfDimensions(IMG_SRC_IN);
+    }
+    else if(mxIsEmpty(IMG_DST_IN))
     {
         img_dst = mxGetPr(IMG_SRC_IN);
         IMG_DIMS_DST_ORI = mxGetDimensions(IMG_SRC_IN);
