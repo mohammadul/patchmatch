@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Patchmatch : BruteForce Image Patchmatch" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Patchmatch</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/mohammadul/patchmatch">View on GitHub</a>
+
+          <h1 id="project_title">Patchmatch</h1>
+          <h2 id="project_tagline">BruteForce Image Patchmatch</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/mohammadul/patchmatch/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/mohammadul/patchmatch/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h3>
+<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Matches image patches between two Images.</h3>
+
+<p>This is a MATLAB implementation of bruteforce matching between image patches. To get similarity matrix, visit Createsimilaritymatrix(<a href="http://mohammadul.github.io/createsimilaritymatrix" class="anchor">@createsimilaritymatrix</a>)</p>
+<h6>Salient Features:</h6>
+<p><ul>
+<li>Runs on double datatype images.</li>
+<li>Works between two different images.</li>
+<li>Works between two different sized Images.</li>
+<li>Works on both Grayscale and Color images.</li>
+<li>Works with incomplete images containing nan values, just ignoring
+them.</li>
+<li>Works with any given mask passed as an argument.</li>
+<li>Handles comparison of l-1, l-2 distances.</li>
+</ul>
+</p>
+<h6>Format:</h6>
+The command line format is as follows.</br>
+<span ><span style="color: rgb(0, 102, 0);">nnf</span> =
+patchmatch(<span style="color: rgb(153, 0, 0);">img_src</span>, <span
+style="color: rgb(153, 0, 0);">img_dst</span>, <span
+style="color: rgb(153, 0, 0);">patchsize</span>, <span
+style="color: rgb(153, 0, 0);">nnk</span>, <span
+style="color: rgb(153, 0, 0);">searchradius</span>, <span
+style="color: rgb(153, 0, 0);">mask</span>, <span
+style="color: rgb(153, 0, 0);">searchstep</span>, <span
+style="color: rgb(153, 0, 0);">includeself</span>, <span
+style="color: rgb(153, 0, 0);">incomplete</span>, <span
+style="color: rgb(153, 0, 0);">threshold</span>, <span
+style="color: rgb(153, 0, 0);">disttype</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+style="color: rgb(153, 0, 0);">img_src</span> - input source image
+(RGB/Grayscale in double datatype)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+style="color: rgb(153, 0, 0);">img_dst </span>- input destination
+image (RGB/Grayscale in double datatype) (default - img_src)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+style="color: rgb(153, 0, 0);">patchsize</span> - size of search patch
+(default - 5)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+style="color: rgb(153, 0, 0);">nnk</span> - number of nearest neighbours
+(default - 5)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+style="color: rgb(153, 0, 0);">searchradius</span> - patch search
+radius (default - 10)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+style="color: rgb(153, 0, 0);">mask</span> - patch distance weight
+mask (size - patchsize X patchsize)(default - ones)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+style="color: rgb(153, 0, 0);">searchstep</span> - patch search step
+(default - 2)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+style="color: rgb(153, 0, 0);">includeself</span> - 0/1 (default - 1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+style="color: rgb(153, 0, 0);">incomplete</span> - allow nan values in
+img - 0/1 (default - 0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+style="color: rgb(153, 0, 0);">threshold</span> - threshold for
+incomplete image input (default - 0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+style="color: rgb(153, 0, 0);">disttype</span> - distance type, 0 -
+LARK / 1 - l1 / 2 - l2 / 3 - poisson (default - 2) (LARK not completely
+implemented)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+style="color: rgb(0, 102, 0);">nnf</span> - output nearest neighbour
+field</span>
+
+<h6>Examples:</h6>
+<pre><code>img = double(imresize(imread('lena.png'),0.25)); 
+patchsize = 5; nn = 10;
+cnn = patchmatch(img, [], patchsize, nn, 20, [], 1, [], [], [], 2);
+visualizer(img, cnn, patchsize);
+</code></pre>
+<img class="center" src="images/sample1.jpg" width="210px" height="210px" alt="Patchmatch on image lena.png'">
+</span>
+
+<h3>
+<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+
+<p>Sk. Mohammadul Haque (<a href="https://github.com/mohammadul" class="user-mention">@mohammadul</a>)</p>
+
+<h3>
+<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
+
+<p>Check out the files in the repository for more details.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Patchmatch maintained by <a href="https://github.com/mohammadul">mohammadul</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
