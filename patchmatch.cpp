@@ -7,7 +7,7 @@
 ** Matches patches between images
 **
 ** Author: Sk. Mohammadul Haque
-** Copyright (c) 2013 Sk. Mohammadul Haque
+** Copyright (c) 2013, 2022 Sk. Mohammadul Haque
 ** -------------------------------------------------------------------------*/
 
 #include <iostream>
@@ -21,6 +21,10 @@
 #include <omp.h>
 #endif
 using namespace std;
+
+#ifndef FMT64
+#define FMT64 ""
+#endif
 
 #define DATA_TYPE int64_t
 #define LNEG_VAL (INT_MIN)
@@ -57,8 +61,6 @@ struct pxpair
 #define min(x, y) ((x)<(y)?(x):(y))
 #endif
 
-typedef pxpair pxpair;
-
 typedef vector<DATA_TYPE>::const_iterator vecintiter;
 typedef vector<double>::const_iterator vecdoubleiter;
 struct ordering
@@ -69,7 +71,8 @@ struct ordering
     }
 };
 
-template <typename T>vector<T> sort_from_ref( vector<T> const& in, vector<pair<DATA_TYPE, vecintiter> > const& reference)
+template <typename T, typename U1, typename U2>
+vector<T> sort_from_ref( vector<T> const& in, vector<pair<U1, typename vector<U2>::const_iterator > > const& reference)
 {
     vector<T> ret(in.size());
     DATA_TYPE const size = in.size();
@@ -77,40 +80,826 @@ template <typename T>vector<T> sort_from_ref( vector<T> const& in, vector<pair<D
     return ret;
 }
 
-template <typename T>vector<T> sort_from_ref( vector<T> const& in, vector<pair<DATA_TYPE, vecdoubleiter> > const& reference)
+struct CostType
 {
-    vector<T> ret(in.size());
-    DATA_TYPE const size = in.size();
-    for(DATA_TYPE i=0; i<size; ++i) ret[i] = in[reference[i].first];
-    return ret;
+    struct POISSON {};
+    struct L1 {};
+    struct L2 {};
+    struct LARK {};
+};
+
+struct NumLayers
+{
+    struct SINGLE {};
+    struct MULTI {};
+};
+
+template <typename T1, typename T2>
+__inline double blockmatch(
+  const DATA_TYPE si, const DATA_TYPE sj, const DATA_TYPE ti, const DATA_TYPE tj,
+  const double *const * const mask, const double * const img_src, const double * const img_dst,
+  const DATA_TYPE * const patchsize, const DATA_TYPE imgsM, const DATA_TYPE imgsN,
+  const DATA_TYPE imgtM, const DATA_TYPE imgtN)
+{
+    return 0;
 }
 
-__inline double blockmatchgray(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
-__inline double blockmatchcolor(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
-__inline double blockmatchgray_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
-__inline double blockmatchcolor_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
-__inline double blockmatchgray_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
-__inline double blockmatchcolor_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
+template <>
+__inline double blockmatch<CostType::POISSON, NumLayers::SINGLE>(
+  const DATA_TYPE si, const DATA_TYPE sj, const DATA_TYPE ti, const DATA_TYPE tj,
+  const double *const * const mask, const double * const img_src, const double * const img_dst,
+  const DATA_TYPE * const patchsize, const DATA_TYPE imgsM, const DATA_TYPE imgsN,
+  const DATA_TYPE imgtM, const DATA_TYPE imgtN)
+{
+    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti;
+    double dist = 0.0;
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            dist += mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
+            //mexPrintf("(si, sj) = (%d, %d), (ti, tj) = (%d, %d),|| i = %d, j= %d, || sval = %f, tval = %f, dist = %f\n", si,sj,ti,tj, i,j,img[src_idx+i],img[tgt_idx+i], (img[src_idx+i]-img[tgt_idx+i])*(img[src_idx+i]-img[tgt_idx+i]));
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+    return dist;
+}
 
-__inline double blockmatchgray_cmu(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
-__inline double blockmatchcolor_cmu(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN);
 
-__inline double blockmatchgrayi(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN, double threshold);
-__inline double blockmatchcolori(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN, double threshold);
-__inline double blockmatchgrayi_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN, double threshold);
-__inline double blockmatchcolori_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN, double threshold);
-__inline double blockmatchgrayi_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN, double threshold);
-__inline double blockmatchcolori_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN, double threshold);
+template <>
+__inline double blockmatch<CostType::POISSON, NumLayers::MULTI>(
+  const DATA_TYPE si, const DATA_TYPE sj, const DATA_TYPE ti, const DATA_TYPE tj,
+  const double *const * const mask, const double * const img_src, const double * const img_dst,
+  const DATA_TYPE * const patchsize, const DATA_TYPE imgsM, const DATA_TYPE imgsN,
+  const DATA_TYPE imgtM, const DATA_TYPE imgtN)
+{
+    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti, numels_src = imgsM*imgsN, numels_dst = imgtM*imgtN;
+    double dist = 0.0;
+    /* channel R */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            dist += mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
 
+    /* channel G */
+    src_idx = sj*imgsM+si+numels_src;
+    tgt_idx = tj*imgtM+ti+numels_dst; /* shift to the next layer */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            dist += mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+
+    /* channel B */
+    src_idx = sj*imgsM+si+2*numels_src;
+    tgt_idx = tj*imgtM+ti+2*numels_dst; /* shift to the next layer */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            dist += mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+    return dist;
+}
+
+
+template <>
+__inline double blockmatch<CostType::L2, NumLayers::SINGLE>(
+  const DATA_TYPE si, const DATA_TYPE sj, const DATA_TYPE ti, const DATA_TYPE tj,
+  const double *const * const mask, const double * const img_src, const double * const img_dst,
+  const DATA_TYPE * const patchsize, const DATA_TYPE imgsM, const DATA_TYPE imgsN,
+  const DATA_TYPE imgtM, const DATA_TYPE imgtN)
+{
+    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti;
+    double dist = 0.0;
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            dist += mask[i][j]*(img_src[src_idx+i]-img_dst[tgt_idx+i])*(img_src[src_idx+i]-img_dst[tgt_idx+i]);
+            //mexPrintf("(si, sj) = (%d, %d), (ti, tj) = (%d, %d),|| i = %d, j= %d, || sval = %f, tval = %f, dist = %f\n", si,sj,ti,tj, i,j,img[src_idx+i],img[tgt_idx+i], (img[src_idx+i]-img[tgt_idx+i])*(img[src_idx+i]-img[tgt_idx+i]));
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+    return dist;
+}
+
+
+template <>
+__inline double blockmatch<CostType::L2, NumLayers::MULTI>(
+  const DATA_TYPE si, const DATA_TYPE sj, const DATA_TYPE ti, const DATA_TYPE tj,
+  const double *const * const mask, const double * const img_src, const double * const img_dst,
+  const DATA_TYPE * const patchsize, const DATA_TYPE imgsM, const DATA_TYPE imgsN,
+  const DATA_TYPE imgtM, const DATA_TYPE imgtN)
+{
+    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti, numels_src = imgsM*imgsN, numels_dst = imgtM*imgtN;
+    double dist = 0.0;
+    /* channel R */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            dist += mask[i][j]*(img_src[src_idx+i]-img_dst[tgt_idx+i])*(img_src[src_idx+i]-img_dst[tgt_idx+i]);
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+
+    /* channel G */
+    src_idx = sj*imgsM+si+numels_src;
+    tgt_idx = tj*imgtM+ti+numels_dst; /* shift to the next layer */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            dist += mask[i][j]*(img_src[src_idx+i]-img_dst[tgt_idx+i])*(img_src[src_idx+i]-img_dst[tgt_idx+i]);
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+
+    /* channel B */
+    src_idx = sj*imgsM+si+2*numels_src;
+    tgt_idx = tj*imgtM+ti+2*numels_dst; /* shift to the next layer */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            dist += mask[i][j]*(img_src[src_idx+i]-img_dst[tgt_idx+i])*(img_src[src_idx+i]-img_dst[tgt_idx+i]);
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+    return dist;
+}
+
+
+template <>
+__inline double blockmatch<CostType::L1, NumLayers::SINGLE>(
+  const DATA_TYPE si, const DATA_TYPE sj, const DATA_TYPE ti, const DATA_TYPE tj,
+  const double *const * const mask, const double * const img_src, const double * const img_dst,
+  const DATA_TYPE * const patchsize, const DATA_TYPE imgsM, const DATA_TYPE imgsN,
+  const DATA_TYPE imgtM, const DATA_TYPE imgtN)
+{
+    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti;
+    double dist = 0.0;
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            dist += mask[i][j]*fabs(img_src[src_idx+i]-img_dst[tgt_idx+i]);
+            //mexPrintf("(si, sj) = (%d, %d), (ti, tj) = (%d, %d),|| i = %d, j= %d, || sval = %f, tval = %f, dist = %f\n", si,sj,ti,tj, i,j,img[src_idx+i],img[tgt_idx+i], (img[src_idx+i]-img[tgt_idx+i])*(img[src_idx+i]-img[tgt_idx+i]));
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+    return dist;
+}
+
+template <>
+__inline double blockmatch<CostType::L1, NumLayers::MULTI>(
+  const DATA_TYPE si, const DATA_TYPE sj, const DATA_TYPE ti, const DATA_TYPE tj,
+  const double *const * const mask, const double * const img_src, const double * const img_dst,
+  const DATA_TYPE * const patchsize, const DATA_TYPE imgsM, const DATA_TYPE imgsN,
+  const DATA_TYPE imgtM, const DATA_TYPE imgtN)
+{
+    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti, numels_src = imgsM*imgsN, numels_dst = imgtM*imgtN;
+    double dist = 0.0;
+    /* channel R */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            dist += mask[i][j]*fabs(img_src[src_idx+i]-img_dst[tgt_idx+i]);
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+
+    /* channel G */
+    src_idx = sj*imgsM+si+numels_src;
+    tgt_idx = tj*imgtM+ti+numels_dst; /* shift to the next layer */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            dist += mask[i][j]*fabs(img_src[src_idx+i]-img_dst[tgt_idx+i]);
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+
+    /* channel B */
+    src_idx = sj*imgsM+si+2*numels_src;
+    tgt_idx = tj*imgtM+ti+2*numels_dst; /* shift to the next layer */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            dist += mask[i][j]*fabs(img_src[src_idx+i]-img_dst[tgt_idx+i]);
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+    return dist;
+}
+
+template <>
+__inline double blockmatch<CostType::LARK, NumLayers::SINGLE>(
+  const DATA_TYPE si, const DATA_TYPE sj, const DATA_TYPE ti, const DATA_TYPE tj,
+  const double *const * const mask, const double * const img_src, const double * const img_dst,
+  const DATA_TYPE * const patchsize, const DATA_TYPE imgsM, const DATA_TYPE imgsN,
+  const DATA_TYPE imgtM, const DATA_TYPE imgtN)
+{
+    DATA_TYPE i, j, src_idx = sj*imgsM+si, p_m_one[2] = {patchsize[0]-1, patchsize[1]-1};
+    double dist = 0.0, tempxx, tempxy, tempyy;
+    double s_C[3] = {0,0,0};
+
+    //calculate Cs
+    src_idx = sj*imgsM+si;
+
+    for(j=0; j<p_m_one[1]; ++j)
+    {
+        for(i=0; i<p_m_one[0]; ++i)
+        {
+            s_C[0] += (img_src[src_idx+i+1]-img_src[src_idx+i])*(img_src[src_idx+i+1]-img_src[src_idx+i]); //along x
+            s_C[1] += (img_src[src_idx+i+imgsM]-img_src[src_idx+i])*(img_src[src_idx+i+imgsM]-img_src[src_idx+i]); //along y
+            s_C[2] += (img_src[src_idx+i+1]-img_src[src_idx+i])*(img_src[src_idx+i+imgsM]-img_src[src_idx+i]); //along x-y
+
+        }
+
+        src_idx += imgsM+1;
+    }
+
+    s_C[0] = (s_C[0])/(p_m_one[0]*p_m_one[1]);
+    s_C[1] = (s_C[1])/(p_m_one[0]*p_m_one[1]);
+    s_C[2] = (s_C[2])/(p_m_one[0]*p_m_one[1]);
+    tempxx = static_cast<double>(si-ti); tempxx *= tempxx;
+    tempyy = static_cast<double>(sj-tj); tempyy *= tempyy;
+    tempxy = static_cast<double>(si-ti); tempxy *= static_cast<double>(sj-tj);
+
+
+    dist = s_C[0]*tempxx+s_C[1]*tempyy+2*s_C[2]*tempxy;
+    //mexPrintf("(si, sj) = (%d, %d), (ti, tj) = (%d, %d),|| i = %d, j= %d, || sval = %f, tval = %f, dist = %f\n", si,sj,ti,tj, i,j,img[src_idx+i],img[tgt_idx+i], (img[src_idx+i]-img[tgt_idx+i])*(img[src_idx+i]-img[tgt_idx+i]));
+    return dist;
+}
+
+template <>
+__inline double blockmatch<CostType::LARK, NumLayers::MULTI>(
+  const DATA_TYPE si, const DATA_TYPE sj, const DATA_TYPE ti, const DATA_TYPE tj,
+  const double *const * const mask, const double * const img_src, const double * const img_dst,
+  const DATA_TYPE * const patchsize, const DATA_TYPE imgsM, const DATA_TYPE imgsN,
+  const DATA_TYPE imgtM, const DATA_TYPE imgtN)
+{
+    DATA_TYPE i, j, src_idx = sj*imgsM+si, p_m_one[2] = {patchsize[0]-1,patchsize[1]-1}, numels = imgsM*imgsN;
+    double dist = 0.0, tempxx, tempxy, tempyy;
+    double s_C[3][3] = {{0,0,0},{0,0,0},{0,0,0}};
+
+    //for R channel
+
+    //calculate Cs
+    for(j=0; j<p_m_one[1]; ++j)
+    {
+        for(i=0; i<p_m_one[0]; ++i)
+        {
+            s_C[0][0] += (img_src[src_idx+i+1]-img_src[src_idx+i])*(img_src[src_idx+i+1]-img_src[src_idx+i]); //along x
+            s_C[0][1] += (img_src[src_idx+i+imgsM]-img_src[src_idx+i])*(img_src[src_idx+i+imgsM]-img_src[src_idx+i]); //along y
+            s_C[0][2] += (img_src[src_idx+i+1]-img_src[src_idx+i])*(img_src[src_idx+i+imgsM]-img_src[src_idx+i]); //along x-y
+
+        }
+        src_idx += imgsM+1;
+    }
+
+    s_C[0][0] = (s_C[0][0])/(p_m_one[0]*p_m_one[1]);
+    s_C[0][1] = (s_C[0][1])/(p_m_one[0]*p_m_one[1]);
+    s_C[0][2] = (s_C[0][2])/(p_m_one[0]*p_m_one[1]);
+
+    //for G channel
+    src_idx = sj*imgsM+si+numels; /* shift to the next layer */
+
+    //calculate Cs
+    for(j=0; j<p_m_one[1]; ++j)
+    {
+        for(i=0; i<p_m_one[0]; ++i)
+        {
+            s_C[1][0] += (img_src[src_idx+i+1]-img_src[src_idx+i])*(img_src[src_idx+i+1]-img_src[src_idx+i]); //along x
+            s_C[1][1] += (img_src[src_idx+i+imgsM]-img_src[src_idx+i])*(img_src[src_idx+i+imgsM]-img_src[src_idx+i]); //along y
+            s_C[1][2] += (img_src[src_idx+i+1]-img_src[src_idx+i])*(img_src[src_idx+i+imgsM]-img_src[src_idx+i]); //along x-y
+
+        }
+        src_idx += imgsM+1;
+    }
+
+    s_C[1][0] = (s_C[1][0])/(p_m_one[0]*p_m_one[1]);
+    s_C[1][1] = (s_C[1][1])/(p_m_one[0]*p_m_one[1]);
+    s_C[1][2] = (s_C[1][2])/(p_m_one[0]*p_m_one[1]);
+
+    //for B channel
+    src_idx = sj*imgsM+si+2*numels; /* shift to the next layer */
+
+    //calculate Cs
+    for(j=0; j<p_m_one[1]; ++j)
+    {
+        for(i=0; i<p_m_one[0]; ++i)
+        {
+            s_C[2][0] += (img_src[src_idx+i+1]-img_src[src_idx+i])*(img_src[src_idx+i+1]-img_src[src_idx+i]); //along x
+            s_C[2][1] += (img_src[src_idx+i+imgsM]-img_src[src_idx+i])*(img_src[src_idx+i+imgsM]-img_src[src_idx+i]); //along y
+            s_C[2][2] += (img_src[src_idx+i+1]-img_src[src_idx+i])*(img_src[src_idx+i+imgsM]-img_src[src_idx+i]); //along x-y
+        }
+        src_idx += imgsM+1;
+    }
+
+    s_C[2][0] = (s_C[2][0])/(p_m_one[0]*p_m_one[1]);
+    s_C[2][1] = (s_C[2][1])/(p_m_one[0]*p_m_one[1]);
+    s_C[2][2] = (s_C[2][2])/(p_m_one[0]*p_m_one[1]);
+
+    tempxx = static_cast<double>(si-ti); tempxx *= tempxx;
+    tempyy = static_cast<double>(sj-tj); tempyy *= tempyy;
+    tempxy = static_cast<double>(si-ti); tempxy *= static_cast<double>(sj-tj);
+
+    dist = (s_C[0][0]+s_C[1][0]+s_C[2][0])*tempxx+(s_C[0][1]+s_C[1][1]+s_C[2][1])*tempyy+2*(s_C[0][2]+s_C[1][2]+s_C[2][2])*tempxy;
+    //mexPrintf("(si, sj) = (%d, %d), (ti, tj) = (%d, %d),|| i = %d, j= %d, || sval = %f, tval = %f, dist = %f\n", si,sj,ti,tj, i,j,img[src_idx+i],img[tgt_idx+i], (img[src_idx+i]-img[tgt_idx+i])*(img[src_idx+i]-img[tgt_idx+i]));
+
+    return dist;
+}
+
+
+template <typename T, typename U>
+void func(const double * const * const mask, const double * const img_src, const double * const img_dst,
+          const DATA_TYPE * const patchsize, const DATA_TYPE * const IMG_DIMS_SRC,
+          const DATA_TYPE * const IMG_DIMS_DST, int32_t *nnf, const DATA_TYPE searchradius,
+          const DATA_TYPE searchstep, const bool includeself, const int nnk)
+{
+
+    const DATA_TYPE max_X = IMG_DIMS_SRC[0]-patchsize[0];
+    const DATA_TYPE max_Y = IMG_DIMS_SRC[1]-patchsize[1];
+    const DATA_TYPE nelems = IMG_DIMS_SRC[0]*IMG_DIMS_SRC[1];
+
+    #ifdef __PARALLEL__
+    #pragma omp parallel for shared(IMG_DIMS_SRC, IMG_DIMS_DST, nnf, img_src, img_dst, searchradius, patchsize, searchstep, mask, nelems)
+    #endif
+
+    for(DATA_TYPE sj=0; sj<=max_Y; ++sj)
+    {
+        for(DATA_TYPE si=0; si<=max_X; ++si)
+        {
+            DATA_TYPE startx, starty, endx, endy;
+            DATA_TYPE Ms = IMG_DIMS_SRC[0], Ns = IMG_DIMS_SRC[1];
+            DATA_TYPE Mt = IMG_DIMS_DST[0], Nt = IMG_DIMS_DST[1];
+            vector<pxpair> pxall;
+            vector<double> distall;
+            double curr_dist;
+
+            startx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])-searchradius;
+            startx = (startx>0)?startx: 0;
+            starty = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])-searchradius;
+            starty = (starty>0)?starty: 0;
+
+            endx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])+searchradius;
+            endx = (endx<(Mt-patchsize[0]))?endx: (Mt-patchsize[0]);
+            endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
+            endy = (endy<(Nt-patchsize[1]))?endy: (Nt-patchsize[1]);
+
+            for(DATA_TYPE nj = starty; nj<=endy; nj+=searchstep)
+            {
+                for(DATA_TYPE ni = startx; ni<=endx; ni+=searchstep)
+                {
+                    if(si!=ni || sj!=nj||includeself)
+                    {
+                        curr_dist = blockmatch<T, U>(
+                        si, sj, ni, nj, mask, img_src,
+                        img_dst, patchsize, Ms, Ns, Mt, Nt);
+                        //mexPrintf("Source: (%Ld, %Ld) || Target: (%Ld, %Ld) || Dist: %f\n", si, sj, ni, nj, curr_dist);
+                        pxpair curr_px = {ni, nj};
+                        pxall.push_back(curr_px);
+                        distall.push_back(curr_dist);
+                    }
+                }
+            }
+
+            //sort and take 1st few
+            vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
+
+            DATA_TYPE n = 0;
+            for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
+            sort(order.begin(), order.end(), ordering());
+
+            vector<double> sorted_distall = sort_from_ref<double, DATA_TYPE, double>(distall, order);
+            vector<pxpair> sorted_pxall = sort_from_ref<pxpair, DATA_TYPE, double>(pxall, order);
+            DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
+            DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+            for(DATA_TYPE l=0; l<lmax; ++l)
+            {
+                nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
+                nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
+                nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
+            }
+            for(DATA_TYPE l=lmax; l<nnk; ++l)
+            {
+                nnf[lidx+l*3*nelems] = LNEG_VAL;
+                nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
+            }
+        }
+    }
+
+}
+
+
+template <typename T1, typename T2>
+__inline double blockmatch(
+  const DATA_TYPE si, const DATA_TYPE sj, const DATA_TYPE ti, const DATA_TYPE tj,
+  const double *const * const mask, const double * const img_src, const double * const img_dst,
+  const DATA_TYPE * const patchsize, const DATA_TYPE imgsM, const DATA_TYPE imgsN,
+  const DATA_TYPE imgtM, const DATA_TYPE imgtN, const double threshold)
+{
+    return 0;
+}
+
+template <>
+__inline double blockmatch<CostType::L2, NumLayers::SINGLE>(
+  const DATA_TYPE si, const DATA_TYPE sj, const DATA_TYPE ti, const DATA_TYPE tj,
+  const double *const * const mask, const double * const img_src, const double * const img_dst,
+  const DATA_TYPE * const patchsize, const DATA_TYPE imgsM, const DATA_TYPE imgsN,
+  const DATA_TYPE imgtM, const DATA_TYPE imgtN, const double threshold)
+{
+    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti;
+    double dist = 0.0, den = 0, temp;
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            temp = (img_src[src_idx+i]-img_dst[tgt_idx+i])*(img_src[src_idx+i]-img_dst[tgt_idx+i]);
+            if(!isnan(temp))
+            {
+                dist += mask[i][j]*temp;
+                den += mask[i][j];
+            }
+            //mexPrintf("(si, sj) = (%d, %d), (ti, tj) = (%d, %d),|| i = %d, j= %d, || sval = %f, tval = %f, dist = %f\n", si,sj,ti,tj, i,j,img[src_idx+i],img[tgt_idx+i], (img[src_idx+i]-img[tgt_idx+i])*(img[src_idx+i]-img[tgt_idx+i]));
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+    dist /= den;
+    if(den<=threshold) dist = static_cast<double>(LPOS_VAL);
+    return dist;
+}
+
+template <>
+__inline double blockmatch<CostType::L2, NumLayers::MULTI>(
+  const DATA_TYPE si, const DATA_TYPE sj, const DATA_TYPE ti, const DATA_TYPE tj,
+  const double *const * const mask, const double * const img_src, const double * const img_dst,
+  const DATA_TYPE * const patchsize, const DATA_TYPE imgsM, const DATA_TYPE imgsN,
+  const DATA_TYPE imgtM, const DATA_TYPE imgtN, const double threshold)
+{
+    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti, numels_src = imgsM*imgsN, numels_dst = imgtM*imgtN;
+    double dist = 0.0, den = 0.0, temp;
+    /* channel R */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            temp = mask[i][j]*(img_src[src_idx+i]-img_dst[tgt_idx+i])*(img_src[src_idx+i]-img_dst[tgt_idx+i]);
+            if(!isnan(temp))
+            {
+                dist += mask[i][j]*temp;
+                den += mask[i][j];
+            }
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+
+    /* channel G */
+    src_idx = sj*imgsM+si+numels_src;
+    tgt_idx = tj*imgtM+ti+numels_dst; /* shift to the next layer */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            temp = mask[i][j]*(img_src[src_idx+i]-img_dst[tgt_idx+i])*(img_src[src_idx+i]-img_dst[tgt_idx+i]);
+            if(!isnan(temp))
+            {
+                dist += mask[i][j]*temp;
+                den += mask[i][j];
+            }
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+
+    /* channel B */
+    src_idx = sj*imgsM+si+2*numels_src;
+    tgt_idx = tj*imgtM+ti+2*numels_dst; /* shift to the next layer */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            temp = mask[i][j]*(img_src[src_idx+i]-img_dst[tgt_idx+i])*(img_src[src_idx+i]-img_dst[tgt_idx+i]);
+            if(!isnan(temp))
+            {
+                dist += mask[i][j]*temp;
+                den += mask[i][j];
+            }
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+    dist /= den;
+    if(den<=threshold) dist = static_cast<double>(LPOS_VAL);
+    return dist;
+}
+
+
+template <>
+__inline double blockmatch<CostType::L1, NumLayers::SINGLE>(
+  const DATA_TYPE si, const DATA_TYPE sj, const DATA_TYPE ti, const DATA_TYPE tj,
+  const double *const * const mask, const double * const img_src, const double * const img_dst,
+  const DATA_TYPE * const patchsize, const DATA_TYPE imgsM, const DATA_TYPE imgsN,
+  const DATA_TYPE imgtM, const DATA_TYPE imgtN, const double threshold)
+{
+    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti;
+    double dist = 0.0, den = 0.0, temp;
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            temp = fabs(img_src[src_idx+i]-img_dst[tgt_idx+i]);
+            if(!isnan(temp))
+            {
+                dist += mask[i][j]*temp;
+                den += mask[i][j];
+            }
+            //mexPrintf("(si, sj) = (%d, %d), (ti, tj) = (%d, %d),|| i = %d, j= %d, || sval = %f, tval = %f, dist = %f\n", si,sj,ti,tj, i,j,img[src_idx+i],img[tgt_idx+i], (img[src_idx+i]-img[tgt_idx+i])*(img[src_idx+i]-img[tgt_idx+i]));
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+    dist /= den;
+    if(den<=threshold) dist = static_cast<double>(LPOS_VAL);
+    return dist;
+}
+
+template <>
+__inline double blockmatch<CostType::L1, NumLayers::MULTI>(
+  const DATA_TYPE si, const DATA_TYPE sj, const DATA_TYPE ti, const DATA_TYPE tj,
+  const double *const * const mask, const double * const img_src, const double * const img_dst,
+  const DATA_TYPE * const patchsize, const DATA_TYPE imgsM, const DATA_TYPE imgsN,
+  const DATA_TYPE imgtM, const DATA_TYPE imgtN, const double threshold)
+{
+    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti, numels_src = imgsM*imgsN, numels_dst = imgtM*imgtN;
+    double dist = 0.0, den = 0.0, temp;
+    /* channel R */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            temp = mask[i][j]*fabs(img_src[src_idx+i]-img_dst[tgt_idx+i]);
+            if(!isnan(temp))
+            {
+                dist += mask[i][j]*temp;
+                den += mask[i][j];
+            }
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+
+    /* channel G */
+    src_idx = sj*imgsM+si+numels_src;
+    tgt_idx = tj*imgtM+ti+numels_dst; /* shift to the next layer */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            temp = mask[i][j]*fabs(img_src[src_idx+i]-img_dst[tgt_idx+i]);
+            if(!isnan(temp))
+            {
+                dist += mask[i][j]*temp;
+                den += mask[i][j];
+            }
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+
+    /* channel B */
+    src_idx = sj*imgsM+si+2*numels_src;
+    tgt_idx = tj*imgtM+ti+2*numels_dst; /* shift to the next layer */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            temp = mask[i][j]*fabs(img_src[src_idx+i]-img_dst[tgt_idx+i]);
+            if(!isnan(temp))
+            {
+                dist += mask[i][j]*temp;
+                den += mask[i][j];
+            }
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+    dist /= den;
+    if(den<=threshold) dist = static_cast<double>(LPOS_VAL);
+    return dist;
+}
+
+
+template <>
+__inline double blockmatch<CostType::POISSON, NumLayers::SINGLE>(
+  const DATA_TYPE si, const DATA_TYPE sj, const DATA_TYPE ti, const DATA_TYPE tj,
+  const double *const * const mask, const double * const img_src, const double * const img_dst,
+  const DATA_TYPE * const patchsize, const DATA_TYPE imgsM, const DATA_TYPE imgsN,
+  const DATA_TYPE imgtM, const DATA_TYPE imgtN, const double threshold)
+{
+    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti;
+    double dist = 0.0, den = 0.0, temp;
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            temp = (lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
+            if(!isnan(temp))
+            {
+                dist += mask[i][j]*temp;
+                den += mask[i][j];
+            }
+            //mexPrintf("(si, sj) = (%d, %d), (ti, tj) = (%d, %d),|| i = %d, j= %d, || sval = %f, tval = %f, dist = %f\n", si,sj,ti,tj, i,j,img[src_idx+i],img[tgt_idx+i], (img[src_idx+i]-img[tgt_idx+i])*(img[src_idx+i]-img[tgt_idx+i]));
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+    dist /= den;
+    if(den<=threshold) dist = static_cast<double>(LPOS_VAL);
+    return dist;
+}
+
+template <>
+__inline double blockmatch<CostType::POISSON, NumLayers::MULTI>(
+  const DATA_TYPE si, const DATA_TYPE sj, const DATA_TYPE ti, const DATA_TYPE tj,
+  const double *const * const mask, const double * const img_src, const double * const img_dst,
+  const DATA_TYPE * const patchsize, const DATA_TYPE imgsM, const DATA_TYPE imgsN,
+  const DATA_TYPE imgtM, const DATA_TYPE imgtN, const double threshold)
+{
+    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti, numels_src = imgsM*imgsN, numels_dst = imgtM*imgtN;
+    double dist = 0.0, den = 0.0, temp;
+    /* channel R */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            temp = mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
+            if(!isnan(temp))
+            {
+                dist += mask[i][j]*temp;
+                den += mask[i][j];
+            }
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+
+    /* channel G */
+    src_idx = sj*imgsM+si+numels_src;
+    tgt_idx = tj*imgtM+ti+numels_dst; /* shift to the next layer */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            temp = mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
+            if(!isnan(temp))
+            {
+                dist += mask[i][j]*temp;
+                den += mask[i][j];
+            }
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+
+    /* channel B */
+    src_idx = sj*imgsM+si+2*numels_src;
+    tgt_idx = tj*imgtM+ti+2*numels_dst; /* shift to the next layer */
+    for(j=0; j<patchsize[1]; ++j)
+    {
+        for(i=0; i<patchsize[0]; ++i)
+        {
+            temp = mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
+            if(!isnan(temp))
+            {
+                dist += mask[i][j]*temp;
+                den += mask[i][j];
+            }
+        }
+        src_idx += imgsM;
+        tgt_idx += imgtM;
+    }
+    dist /= den;
+    if(den<=threshold) dist = static_cast<double>(LPOS_VAL);
+    return dist;
+}
+
+template <typename T, typename U>
+void func(const double * const * const mask, const double * const img_src, const double * const img_dst,
+          const DATA_TYPE * const patchsize, const DATA_TYPE * const IMG_DIMS_SRC,
+          const DATA_TYPE * const IMG_DIMS_DST, int32_t *nnf, const DATA_TYPE searchradius,
+          const DATA_TYPE searchstep, const bool includeself, const int nnk, const double threshold)
+{
+    const DATA_TYPE max_X = IMG_DIMS_SRC[0]-patchsize[0];
+    const DATA_TYPE max_Y = IMG_DIMS_SRC[1]-patchsize[1];
+    const DATA_TYPE nelems = IMG_DIMS_SRC[0]*IMG_DIMS_SRC[1];
+
+#ifdef __PARALLEL__
+    #pragma omp parallel for shared(IMG_DIMS_SRC, IMG_DIMS_DST, nnf, img_src, img_dst, searchradius, patchsize, searchstep, mask, nelems, threshold)
+#endif
+
+    for(DATA_TYPE sj=0; sj<=max_Y; ++sj)
+    {
+        for(DATA_TYPE si=0; si<=max_X; ++si)
+        {
+            DATA_TYPE startx, starty, endx, endy;
+            DATA_TYPE Ms = IMG_DIMS_SRC[0], Ns = IMG_DIMS_SRC[1];
+            DATA_TYPE Mt = IMG_DIMS_DST[0], Nt = IMG_DIMS_DST[1];
+            vector<pxpair> pxall;
+            vector<double> distall;
+            double curr_dist, thresh = threshold;
+
+            startx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])-searchradius;
+            startx = (startx>0)?startx: 0;
+            starty = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])-searchradius;
+            starty = (starty>0)?starty: 0;
+
+            endx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])+searchradius;
+            endx = (endx<(Mt-patchsize[0]))?endx: (Mt-patchsize[0]);
+            endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
+            endy = (endy<(Nt-patchsize[1]))?endy: (Nt-patchsize[1]);
+
+            for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
+            {
+                for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
+                {
+                    if(si!=ni || sj!=nj||includeself)
+                    {
+                        curr_dist = blockmatch<T, U>(si, sj, ni, nj, mask, img_src, img_dst, patchsize, Ms, Ns, Mt, Nt, thresh);
+                        //mexPrintf("Source: (%Ld, %Ld) || Target: (%Ld, %Ld) || Dist: %f\n", si, sj, ni, nj, curr_dist);
+                        pxpair curr_px = {ni, nj};
+                        pxall.push_back(curr_px);
+                        distall.push_back(curr_dist);
+                    }
+                }
+            }
+
+            //sort and take 1st few
+            vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
+
+            DATA_TYPE n = 0;
+            for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
+            sort(order.begin(), order.end(), ordering());
+
+            vector<double> sorted_distall = sort_from_ref<double, DATA_TYPE, double>(distall, order);
+            vector<pxpair> sorted_pxall = sort_from_ref<pxpair, DATA_TYPE, double>(pxall, order);
+            DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
+            DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
+            for(DATA_TYPE l=0; l<lmax; ++l)
+            {
+                nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
+                nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
+                nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
+            }
+            for(DATA_TYPE l=lmax; l<nnk; ++l)
+            {
+                nnf[lidx+l*3*nelems] = LNEG_VAL;
+                nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
+                nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
+            }
+        }
+    }
+
+}
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
-    double **mask = NULL, *rmask = NULL, *img_src = NULL, *img_dst = NULL, threshold = 0.0;
-    int32_t *nnf = NULL;
+    double **mask = nullptr, *rmask = nullptr, *img_src = nullptr, *img_dst = nullptr, threshold = 0.0;
+    int32_t *nnf = nullptr;
     bool includeself = true, incomplete = false;
     int ndims_src, ndims_dst, nnk = 5, disttype = 2;
     DATA_TYPE IMG_DIMS_SRC[3]= {0, 0, 0}, IMG_DIMS_DST[3]= {0, 0, 0}, patchsize[2] = {5,5}, searchradius = 10, searchstep = 2;
-    const mwSize *IMG_DIMS_SRC_ORI = NULL, *IMG_DIMS_DST_ORI = NULL;
+    const mwSize *IMG_DIMS_SRC_ORI = nullptr, *IMG_DIMS_DST_ORI = nullptr;
 
     /* check number of arguments */
     /** nnf = patchmatch(img_src, img_dst, patchsize, nnk, searchradius, mask, searchstep, includeself, incomplete, threshold, disttype) **/
@@ -335,144 +1124,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             switch(IMG_DIMS_SRC[2])
             {
             case 1:
-            {
-#ifdef __PARALLEL__
-                #pragma omp parallel for shared(IMG_DIMS_SRC, IMG_DIMS_DST, nnf, img_src, img_dst, searchradius, patchsize, searchstep, mask, nelems)
-#endif
-
-                for(DATA_TYPE sj=0; sj<=max_Y; ++sj)
-                {
-                    for(DATA_TYPE si=0; si<=max_X; ++si)
-                    {
-                        DATA_TYPE startx, starty, endx, endy;
-                        DATA_TYPE Ms = IMG_DIMS_SRC[0], Ns = IMG_DIMS_SRC[1];
-                        DATA_TYPE Mt = IMG_DIMS_DST[0], Nt = IMG_DIMS_DST[1];
-                        vector<pxpair> pxall;
-                        vector<double> distall;
-                        double curr_dist;
-
-                        startx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])-searchradius;
-                        startx = (startx>0)?startx: 0;
-                        starty = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])-searchradius;
-                        starty = (starty>0)?starty: 0;
-
-                        endx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])+searchradius;
-                        endx = (endx<(Mt-patchsize[0]))?endx: (Mt-patchsize[0]);
-                        endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
-                        endy = (endy<(Nt-patchsize[1]))?endy: (Nt-patchsize[1]);
-
-                        for(DATA_TYPE nj = starty; nj<=endy; nj+=searchstep)
-                        {
-                            for(DATA_TYPE ni = startx; ni<=endx; ni+=searchstep)
-                            {
-                                if(si!=ni || sj!=nj||includeself)
-                                {
-                                    curr_dist = blockmatchgray_poisson(si, sj, ni, nj, mask, img_src, img_dst, patchsize, Ms, Ns, Mt, Nt);
-                                    //mexPrintf("Source: (%Ld, %Ld) || Target: (%Ld, %Ld) || Dist: %f\n", si, sj, ni, nj, curr_dist);
-                                    pxpair curr_px = {ni, nj};
-                                    pxall.push_back(curr_px);
-                                    distall.push_back(curr_dist);
-                                }
-                            }
-                        }
-
-                        //sort and take 1st few
-                        vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
-
-                        DATA_TYPE n = 0;
-                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
-                        sort(order.begin(), order.end(), ordering());
-
-                        vector<double> sorted_distall = sort_from_ref(distall, order);
-                        vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
-                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
-                        for(DATA_TYPE l=0; l<lmax; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
-                        }
-                        for(DATA_TYPE l=lmax; l<nnk; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
-                        }
-                    }
-                }
-                break;
-            }
+            func<CostType::POISSON, NumLayers::SINGLE>(
+            mask, img_src, img_dst, patchsize, IMG_DIMS_SRC, IMG_DIMS_DST,
+            nnf, searchradius, searchstep, includeself, nnk);
+            break;
 
             case 3:
-            {
-#ifdef __PARALLEL__
-                #pragma omp parallel for shared(IMG_DIMS_SRC, IMG_DIMS_DST, nnf, img_src, img_dst, searchradius, patchsize, searchstep, mask, nelems)
-#endif
-
-                for(DATA_TYPE sj=0; sj<=max_Y; ++sj)
-                {
-                    for(DATA_TYPE si=0; si<=max_X; ++si)
-                    {
-                        DATA_TYPE startx, starty, endx, endy;
-                        DATA_TYPE Ms = IMG_DIMS_SRC[0], Ns = IMG_DIMS_SRC[1];
-                        DATA_TYPE Mt = IMG_DIMS_DST[0], Nt = IMG_DIMS_DST[1];
-                        vector<pxpair> pxall;
-                        vector<double> distall;
-                        double curr_dist;
-
-                        startx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])-searchradius;
-                        startx = (startx>0)?startx: 0;
-                        starty = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])-searchradius;
-                        starty = (starty>0)?starty: 0;
-
-                        endx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])+searchradius;
-                        endx = (endx<(Mt-patchsize[0]))?endx: (Mt-patchsize[0]);
-                        endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
-                        endy = (endy<(Nt-patchsize[1]))?endy: (Nt-patchsize[1]);
-
-                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
-                        {
-                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
-                            {
-                                if(si!=ni || sj!=nj||includeself)
-                                {
-                                    curr_dist = blockmatchcolor_poisson(si, sj, ni, nj, mask, img_src, img_dst, patchsize, Ms, Ns, Mt, Nt);
-                                    //mexPrintf("Source: (%Ld, %Ld) || Target: (%Ld, %Ld) || Dist: %f\n", si, sj, ni, nj, curr_dist);
-                                    pxpair curr_px = {ni, nj};
-                                    pxall.push_back(curr_px);
-                                    distall.push_back(curr_dist);
-                                }
-                            }
-                        }
-
-                        //sort and take 1st few
-                        vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
-
-                        DATA_TYPE n = 0;
-                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
-                        sort(order.begin(), order.end(), ordering());
-
-                        vector<double> sorted_distall = sort_from_ref(distall, order);
-                        vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
-                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
-                        for(DATA_TYPE l=0; l<lmax; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
-                        }
-                        for(DATA_TYPE l=lmax; l<nnk; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
-                        }
-                    }
-                }
-                break;
-            }
+            func<CostType::POISSON, NumLayers::MULTI>(
+            mask, img_src, img_dst, patchsize, IMG_DIMS_SRC, IMG_DIMS_DST,
+            nnf, searchradius, searchstep, includeself, nnk);
+            break;
 
             default:
             {
@@ -492,144 +1153,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             switch(IMG_DIMS_SRC[2])
             {
             case 1:
-            {
-#ifdef __PARALLEL__
-                #pragma omp parallel for shared(IMG_DIMS_SRC, IMG_DIMS_DST, nnf, img_src, img_dst, searchradius, patchsize, searchstep, mask, nelems)
-#endif
-
-                for(DATA_TYPE sj=0; sj<=max_Y; ++sj)
-                {
-                    for(DATA_TYPE si=0; si<=max_X; ++si)
-                    {
-                        DATA_TYPE startx, starty, endx, endy;
-                        DATA_TYPE Ms = IMG_DIMS_SRC[0], Ns = IMG_DIMS_SRC[1];
-                        DATA_TYPE Mt = IMG_DIMS_DST[0], Nt = IMG_DIMS_DST[1];
-                        vector<pxpair> pxall;
-                        vector<double> distall;
-                        double curr_dist;
-
-                        startx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])-searchradius;
-                        startx = (startx>0)?startx: 0;
-                        starty = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])-searchradius;
-                        starty = (starty>0)?starty: 0;
-
-                        endx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])+searchradius;
-                        endx = (endx<(Mt-patchsize[0]))?endx: (Mt-patchsize[0]);
-                        endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
-                        endy = (endy<(Nt-patchsize[1]))?endy: (Nt-patchsize[1]);
-
-                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
-                        {
-                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
-                            {
-                                if(si!=ni || sj!=nj||includeself)
-                                {
-                                    curr_dist = blockmatchgray(si, sj, ni, nj, mask, img_src, img_dst, patchsize, Ms, Ns, Mt, Nt);
-                                    //mexPrintf("Source: (%Ld, %Ld) || Target: (%Ld, %Ld) || Dist: %f\n", si, sj, ni, nj, curr_dist);
-                                    pxpair curr_px = {ni, nj};
-                                    pxall.push_back(curr_px);
-                                    distall.push_back(curr_dist);
-                                }
-                            }
-                        }
-
-                        //sort and take 1st few
-                        vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
-
-                        DATA_TYPE n = 0;
-                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
-                        sort(order.begin(), order.end(), ordering());
-
-                        vector<double> sorted_distall = sort_from_ref(distall, order);
-                        vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
-                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
-                        for(DATA_TYPE l=0; l<lmax; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
-                        }
-                        for(DATA_TYPE l=lmax; l<nnk; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
-                        }
-                    }
-                }
-                break;
-            }
+            func<CostType::L2, NumLayers::SINGLE>(
+            mask, img_src, img_dst, patchsize, IMG_DIMS_SRC, IMG_DIMS_DST,
+            nnf, searchradius, searchstep, includeself, nnk);
+            break;
 
             case 3:
-            {
-#ifdef __PARALLEL__
-                #pragma omp parallel for shared(IMG_DIMS_SRC, IMG_DIMS_DST, nnf, img_src, img_dst, searchradius, patchsize, searchstep, mask, nelems)
-#endif
-
-                for(DATA_TYPE sj=0; sj<=max_Y; ++sj)
-                {
-                    for(DATA_TYPE si=0; si<=max_X; ++si)
-                    {
-                        DATA_TYPE startx, starty, endx, endy;
-                        DATA_TYPE Ms = IMG_DIMS_SRC[0], Ns = IMG_DIMS_SRC[1];
-                        DATA_TYPE Mt = IMG_DIMS_DST[0], Nt = IMG_DIMS_DST[1];
-                        vector<pxpair> pxall;
-                        vector<double> distall;
-                        double curr_dist;
-
-                        startx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])-searchradius;
-                        startx = (startx>0)?startx: 0;
-                        starty = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])-searchradius;
-                        starty = (starty>0)?starty: 0;
-
-                        endx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])+searchradius;
-                        endx = (endx<(Mt-patchsize[0]))?endx: (Mt-patchsize[0]);
-                        endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
-                        endy = (endy<(Nt-patchsize[1]))?endy: (Nt-patchsize[1]);
-
-                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
-                        {
-                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
-                            {
-                                if(si!=ni || sj!=nj||includeself)
-                                {
-                                    curr_dist = blockmatchcolor(si, sj, ni, nj, mask, img_src, img_dst, patchsize, Ms, Ns, Mt, Nt);
-                                    //mexPrintf("Source: (%Ld, %Ld) || Target: (%Ld, %Ld) || Dist: %f\n", si, sj, ni, nj, curr_dist);
-                                    pxpair curr_px = {ni, nj};
-                                    pxall.push_back(curr_px);
-                                    distall.push_back(curr_dist);
-                                }
-                            }
-                        }
-
-                        //sort and take 1st few
-                        vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
-
-                        DATA_TYPE n = 0;
-                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
-                        sort(order.begin(), order.end(), ordering());
-
-                        vector<double> sorted_distall = sort_from_ref(distall, order);
-                        vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
-                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
-                        for(DATA_TYPE l=0; l<lmax; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
-                        }
-                        for(DATA_TYPE l=lmax; l<nnk; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
-                        }
-                    }
-                }
-                break;
-            }
+            func<CostType::L2, NumLayers::MULTI>(
+            mask, img_src, img_dst, patchsize, IMG_DIMS_SRC, IMG_DIMS_DST,
+            nnf, searchradius, searchstep, includeself, nnk);
+            break;
 
             default:
             {
@@ -649,144 +1182,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             switch(IMG_DIMS_SRC[2])
             {
             case 1:
-            {
-#ifdef __PARALLEL__
-                #pragma omp parallel for shared(IMG_DIMS_SRC, IMG_DIMS_DST, nnf, img_src, img_dst, searchradius, patchsize, searchstep, mask, nelems)
-#endif
-
-                for(DATA_TYPE sj=0; sj<=max_Y; ++sj)
-                {
-                    for(DATA_TYPE si=0; si<=max_X; ++si)
-                    {
-                        DATA_TYPE startx, starty, endx, endy;
-                        DATA_TYPE Ms = IMG_DIMS_SRC[0], Ns = IMG_DIMS_SRC[1];
-                        DATA_TYPE Mt = IMG_DIMS_DST[0], Nt = IMG_DIMS_DST[1];
-                        vector<pxpair> pxall;
-                        vector<double> distall;
-                        double curr_dist;
-
-                        startx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])-searchradius;
-                        startx = (startx>0)?startx: 0;
-                        starty = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])-searchradius;
-                        starty = (starty>0)?starty: 0;
-
-                        endx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])+searchradius;
-                        endx = (endx<(Mt-patchsize[0]))?endx: (Mt-patchsize[0]);
-                        endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
-                        endy = (endy<(Nt-patchsize[1]))?endy: (Nt-patchsize[1]);
-
-                        for(DATA_TYPE nj = starty; nj<=endy; nj+=searchstep)
-                        {
-                            for(DATA_TYPE ni = startx; ni<=endx; ni+=searchstep)
-                            {
-                                if(si!=ni || sj!=nj||includeself)
-                                {
-                                    curr_dist = blockmatchgray_one(si, sj, ni, nj, mask, img_src, img_dst, patchsize, Ms, Ns, Mt, Nt);
-                                    //mexPrintf("Source: (%Ld, %Ld) || Target: (%Ld, %Ld) || Dist: %f\n", si, sj, ni, nj, curr_dist);
-                                    pxpair curr_px = {ni, nj};
-                                    pxall.push_back(curr_px);
-                                    distall.push_back(curr_dist);
-                                }
-                            }
-                        }
-
-                        //sort and take 1st few
-                        vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
-
-                        DATA_TYPE n = 0;
-                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
-                        sort(order.begin(), order.end(), ordering());
-
-                        vector<double> sorted_distall = sort_from_ref(distall, order);
-                        vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
-                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
-                        for(DATA_TYPE l=0; l<lmax; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
-                        }
-                        for(DATA_TYPE l=lmax; l<nnk; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
-                        }
-                    }
-                }
-                break;
-            }
+            func<CostType::L1, NumLayers::SINGLE>(
+            mask, img_src, img_dst, patchsize, IMG_DIMS_SRC, IMG_DIMS_DST,
+            nnf, searchradius, searchstep, includeself, nnk);
+            break;
 
             case 3:
-            {
-#ifdef __PARALLEL__
-                #pragma omp parallel for shared(IMG_DIMS_SRC, IMG_DIMS_DST, nnf, img_src, img_dst, searchradius, patchsize, searchstep, mask, nelems)
-#endif
-
-                for(DATA_TYPE sj=0; sj<=max_Y; ++sj)
-                {
-                    for(DATA_TYPE si=0; si<=max_X; ++si)
-                    {
-                        DATA_TYPE startx, starty, endx, endy;
-                        DATA_TYPE Ms = IMG_DIMS_SRC[0], Ns = IMG_DIMS_SRC[1];
-                        DATA_TYPE Mt = IMG_DIMS_DST[0], Nt = IMG_DIMS_DST[1];
-                        vector<pxpair> pxall;
-                        vector<double> distall;
-                        double curr_dist;
-
-                        startx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])-searchradius;
-                        startx = (startx>0)?startx: 0;
-                        starty = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])-searchradius;
-                        starty = (starty>0)?starty: 0;
-
-                        endx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])+searchradius;
-                        endx = (endx<(Mt-patchsize[0]))?endx: (Mt-patchsize[0]);
-                        endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
-                        endy = (endy<(Nt-patchsize[1]))?endy: (Nt-patchsize[1]);
-
-                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
-                        {
-                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
-                            {
-                                if(si!=ni || sj!=nj||includeself)
-                                {
-                                    curr_dist = blockmatchcolor_one(si, sj, ni, nj, mask, img_src, img_dst, patchsize, Ms, Ns, Mt, Nt);
-                                    //mexPrintf("Source: (%Ld, %Ld) || Target: (%Ld, %Ld) || Dist: %f\n", si, sj, ni, nj, curr_dist);
-                                    pxpair curr_px = {ni, nj};
-                                    pxall.push_back(curr_px);
-                                    distall.push_back(curr_dist);
-                                }
-                            }
-                        }
-
-                        //sort and take 1st few
-                        vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
-
-                        DATA_TYPE n = 0;
-                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
-                        sort(order.begin(), order.end(), ordering());
-
-                        vector<double> sorted_distall = sort_from_ref(distall, order);
-                        vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
-                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
-                        for(DATA_TYPE l=0; l<lmax; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
-                        }
-                        for(DATA_TYPE l=lmax; l<nnk; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
-                        }
-                    }
-                }
-                break;
-            }
+            func<CostType::L1, NumLayers::MULTI>(
+            mask, img_src, img_dst, patchsize, IMG_DIMS_SRC, IMG_DIMS_DST,
+            nnf, searchradius, searchstep, includeself, nnk);
+            break;
 
             default:
             {
@@ -806,144 +1211,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             switch(IMG_DIMS_SRC[2])
             {
             case 1:
-            {
-#ifdef __PARALLEL__
-                #pragma omp parallel for shared(IMG_DIMS_SRC, IMG_DIMS_DST, nnf, img_src, img_dst, searchradius, patchsize, searchstep, mask, nelems)
-#endif
-
-                for(DATA_TYPE sj=0; sj<=max_Y; ++sj)
-                {
-                    for(DATA_TYPE si=0; si<=max_X; ++si)
-                    {
-                        DATA_TYPE startx, starty, endx, endy;
-                        DATA_TYPE Ms = IMG_DIMS_SRC[0], Ns = IMG_DIMS_SRC[1];
-                        DATA_TYPE Mt = IMG_DIMS_DST[0], Nt = IMG_DIMS_DST[1];
-                        vector<pxpair> pxall;
-                        vector<double> distall;
-                        double curr_dist;
-
-                        startx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])-searchradius;
-                        startx = (startx>0)?startx: 0;
-                        starty = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])-searchradius;
-                        starty = (starty>0)?starty: 0;
-
-                        endx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])+searchradius;
-                        endx = (endx<(Mt-patchsize[0]))?endx: (Mt-patchsize[0]);
-                        endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
-                        endy = (endy<(Nt-patchsize[1]))?endy: (Nt-patchsize[1]);
-
-                        for(DATA_TYPE nj = starty; nj<=endy; nj+=searchstep)
-                        {
-                            for(DATA_TYPE ni = startx; ni<=endx; ni+=searchstep)
-                            {
-                                if(si!=ni || sj!=nj||includeself)
-                                {
-                                    curr_dist = blockmatchgray_cmu(si, sj, ni, nj, mask, img_src, img_dst, patchsize, Ms, Ns, Mt, Nt);
-                                    //mexPrintf("Source: (%Ld, %Ld) || Target: (%Ld, %Ld) || Dist: %f\n", si, sj, ni, nj, curr_dist);
-                                    pxpair curr_px = {ni, nj};
-                                    pxall.push_back(curr_px);
-                                    distall.push_back(curr_dist);
-                                }
-                            }
-                        }
-
-                        //sort and take 1st few
-                        vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
-
-                        DATA_TYPE n = 0;
-                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
-                        sort(order.begin(), order.end(), ordering());
-
-                        vector<double> sorted_distall = sort_from_ref(distall, order);
-                        vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
-                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
-                        for(DATA_TYPE l=0; l<lmax; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
-                        }
-                        for(DATA_TYPE l=lmax; l<nnk; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
-                        }
-                    }
-                }
-                break;
-            }
+            func<CostType::LARK, NumLayers::SINGLE>(
+            mask, img_src, img_dst, patchsize, IMG_DIMS_SRC, IMG_DIMS_DST,
+            nnf, searchradius, searchstep, includeself, nnk);
+            break;
 
             case 3:
-            {
-#ifdef __PARALLEL__
-                #pragma omp parallel for shared(IMG_DIMS_SRC, IMG_DIMS_DST, nnf, img_src, img_dst, searchradius, patchsize, searchstep, mask, nelems)
-#endif
-
-                for(DATA_TYPE sj=0; sj<=max_Y; ++sj)
-                {
-                    for(DATA_TYPE si=0; si<=max_X; ++si)
-                    {
-                        DATA_TYPE startx, starty, endx, endy;
-                        DATA_TYPE Ms = IMG_DIMS_SRC[0], Ns = IMG_DIMS_SRC[1];
-                        DATA_TYPE Mt = IMG_DIMS_DST[0], Nt = IMG_DIMS_DST[1];
-                        vector<pxpair> pxall;
-                        vector<double> distall;
-                        double curr_dist;
-
-                        startx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])-searchradius;
-                        startx = (startx>0)?startx: 0;
-                        starty = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])-searchradius;
-                        starty = (starty>0)?starty: 0;
-
-                        endx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])+searchradius;
-                        endx = (endx<(Mt-patchsize[0]))?endx: (Mt-patchsize[0]);
-                        endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
-                        endy = (endy<(Nt-patchsize[1]))?endy: (Nt-patchsize[1]);
-
-                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
-                        {
-                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
-                            {
-                                if(si!=ni || sj!=nj||includeself)
-                                {
-                                    curr_dist = blockmatchcolor_cmu(si, sj, ni, nj, mask, img_src, img_dst, patchsize, Ms, Ns, Mt, Nt);
-                                    //mexPrintf("Source: (%Ld, %Ld) || Target: (%Ld, %Ld) || Dist: %f\n", si, sj, ni, nj, curr_dist);
-                                    pxpair curr_px = {ni, nj};
-                                    pxall.push_back(curr_px);
-                                    distall.push_back(curr_dist);
-                                }
-                            }
-                        }
-
-                        //sort and take 1st few
-                        vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
-
-                        DATA_TYPE n = 0;
-                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
-                        sort(order.begin(), order.end(), ordering());
-
-                        vector<double> sorted_distall = sort_from_ref(distall, order);
-                        vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
-                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
-                        for(DATA_TYPE l=0; l<lmax; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
-                        }
-                        for(DATA_TYPE l=lmax; l<nnk; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
-                        }
-                    }
-                }
-                break;
-            }
+            func<CostType::LARK, NumLayers::MULTI>(
+            mask, img_src, img_dst, patchsize, IMG_DIMS_SRC, IMG_DIMS_DST,
+            nnf, searchradius, searchstep, includeself, nnk);
+            break;
 
             default:
             {
@@ -1013,144 +1290,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             switch(IMG_DIMS_SRC[2])
             {
             case 1:
-            {
-#ifdef __PARALLEL__
-                #pragma omp parallel for shared(IMG_DIMS_SRC, IMG_DIMS_DST, nnf, img_src, img_dst, searchradius, patchsize, searchstep, mask, nelems, threshold)
-#endif
-
-                for(DATA_TYPE sj=0; sj<=max_Y; ++sj)
-                {
-                    for(DATA_TYPE si=0; si<=max_X; ++si)
-                    {
-                        DATA_TYPE startx, starty, endx, endy;
-                        DATA_TYPE Ms = IMG_DIMS_SRC[0], Ns = IMG_DIMS_SRC[1];
-                        DATA_TYPE Mt = IMG_DIMS_DST[0], Nt = IMG_DIMS_DST[1];
-                        vector<pxpair> pxall;
-                        vector<double> distall;
-                        double curr_dist, thresh = threshold;
-
-                        startx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])-searchradius;
-                        startx = (startx>0)?startx: 0;
-                        starty = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])-searchradius;
-                        starty = (starty>0)?starty: 0;
-
-                        endx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])+searchradius;
-                        endx = (endx<(Mt-patchsize[0]))?endx: (Mt-patchsize[0]);
-                        endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
-                        endy = (endy<(Nt-patchsize[1]))?endy: (Nt-patchsize[1]);
-
-                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
-                        {
-                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
-                            {
-                                if(si!=ni || sj!=nj||includeself)
-                                {
-                                    curr_dist = blockmatchgrayi_poisson(si, sj, ni, nj, mask, img_src, img_dst, patchsize, Ms, Ns, Mt, Nt, thresh);
-                                    //mexPrintf("Source: (%Ld, %Ld) || Target: (%Ld, %Ld) || Dist: %f\n", si, sj, ni, nj, curr_dist);
-                                    pxpair curr_px = {ni, nj};
-                                    pxall.push_back(curr_px);
-                                    distall.push_back(curr_dist);
-                                }
-                            }
-                        }
-
-                        //sort and take 1st few
-                        vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
-
-                        DATA_TYPE n = 0;
-                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
-                        sort(order.begin(), order.end(), ordering());
-
-                        vector<double> sorted_distall = sort_from_ref(distall, order);
-                        vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
-                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
-                        for(DATA_TYPE l=0; l<lmax; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
-                        }
-                        for(DATA_TYPE l=lmax; l<nnk; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
-                        }
-                    }
-                }
-                break;
-            }
+            func<CostType::POISSON, NumLayers::SINGLE>(
+            mask, img_src, img_dst, patchsize, IMG_DIMS_SRC, IMG_DIMS_DST,
+            nnf, searchradius, searchstep, includeself, nnk, threshold);
+            break;
 
             case 3:
-            {
-#ifdef __PARALLEL__
-                #pragma omp parallel for shared(IMG_DIMS_SRC, IMG_DIMS_DST, nnf, img_src, img_dst, searchradius, patchsize, searchstep, mask, nelems, threshold)
-#endif
-
-                for(DATA_TYPE sj=0; sj<=max_Y; ++sj)
-                {
-                    for(DATA_TYPE si=0; si<=max_X; ++si)
-                    {
-                        DATA_TYPE startx, starty, endx, endy;
-                        DATA_TYPE Ms = IMG_DIMS_SRC[0], Ns = IMG_DIMS_SRC[1];
-                        DATA_TYPE Mt = IMG_DIMS_DST[0], Nt = IMG_DIMS_DST[1];
-                        vector<pxpair> pxall;
-                        vector<double> distall;
-                        double curr_dist, thresh = threshold;
-
-                        startx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])-searchradius;
-                        startx = (startx>0)?startx: 0;
-                        starty = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])-searchradius;
-                        starty = (starty>0)?starty: 0;
-
-                        endx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])+searchradius;
-                        endx = (endx<(Mt-patchsize[0]))?endx: (Mt-patchsize[0]);
-                        endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
-                        endy = (endy<(Nt-patchsize[1]))?endy: (Nt-patchsize[1]);
-
-                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
-                        {
-                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
-                            {
-                                if(si!=ni || sj!=nj||includeself)
-                                {
-                                    curr_dist = blockmatchcolori_poisson(si, sj, ni, nj, mask, img_src, img_dst, patchsize, Ms, Ns, Mt, Nt, thresh);
-                                    //mexPrintf("Source: (%Ld, %Ld) || Target: (%Ld, %Ld) || Dist: %f\n", si, sj, ni, nj, curr_dist);
-                                    pxpair curr_px = {ni, nj};
-                                    pxall.push_back(curr_px);
-                                    distall.push_back(curr_dist);
-                                }
-                            }
-                        }
-
-                        //sort and take 1st few
-                        vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
-
-                        DATA_TYPE n = 0;
-                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
-                        sort(order.begin(), order.end(), ordering());
-
-                        vector<double> sorted_distall = sort_from_ref(distall, order);
-                        vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
-                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
-                        for(DATA_TYPE l=0; l<lmax; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
-                        }
-                        for(DATA_TYPE l=lmax; l<nnk; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
-                        }
-                    }
-                }
-                break;
-            }
+            func<CostType::POISSON, NumLayers::MULTI>(
+            mask, img_src, img_dst, patchsize, IMG_DIMS_SRC, IMG_DIMS_DST,
+            nnf, searchradius, searchstep, includeself, nnk, threshold);
+            break;
 
             default:
             {
@@ -1171,144 +1320,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             switch(IMG_DIMS_SRC[2])
             {
             case 1:
-            {
-#ifdef __PARALLEL__
-                #pragma omp parallel for shared(IMG_DIMS_SRC, IMG_DIMS_DST, nnf, img_src, img_dst, searchradius, patchsize, searchstep, mask, nelems, threshold)
-#endif
-
-                for(DATA_TYPE sj=0; sj<=max_Y; ++sj)
-                {
-                    for(DATA_TYPE si=0; si<=max_X; ++si)
-                    {
-                        DATA_TYPE startx, starty, endx, endy;
-                        DATA_TYPE Ms = IMG_DIMS_SRC[0], Ns = IMG_DIMS_SRC[1];
-                        DATA_TYPE Mt = IMG_DIMS_DST[0], Nt = IMG_DIMS_DST[1];
-                        vector<pxpair> pxall;
-                        vector<double> distall;
-                        double curr_dist, thresh = threshold;
-
-                        startx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])-searchradius;
-                        startx = (startx>0)?startx: 0;
-                        starty = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])-searchradius;
-                        starty = (starty>0)?starty: 0;
-
-                        endx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])+searchradius;
-                        endx = (endx<(Mt-patchsize[0]))?endx: (Mt-patchsize[0]);
-                        endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
-                        endy = (endy<(Nt-patchsize[1]))?endy: (Nt-patchsize[1]);
-
-                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
-                        {
-                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
-                            {
-                                if(si!=ni || sj!=nj||includeself)
-                                {
-                                    curr_dist = blockmatchgrayi(si, sj, ni, nj, mask, img_src, img_dst, patchsize, Ms, Ns, Mt, Nt, thresh);
-                                    //mexPrintf("Source: (%Ld, %Ld) || Target: (%Ld, %Ld) || Dist: %f\n", si, sj, ni, nj, curr_dist);
-                                    pxpair curr_px = {ni, nj};
-                                    pxall.push_back(curr_px);
-                                    distall.push_back(curr_dist);
-                                }
-                            }
-                        }
-
-                        //sort and take 1st few
-                        vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
-
-                        DATA_TYPE n = 0;
-                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
-                        sort(order.begin(), order.end(), ordering());
-
-                        vector<double> sorted_distall = sort_from_ref(distall, order);
-                        vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
-                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
-                        for(DATA_TYPE l=0; l<lmax; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
-                        }
-                        for(DATA_TYPE l=lmax; l<nnk; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
-                        }
-                    }
-                }
-                break;
-            }
+            func<CostType::L2, NumLayers::SINGLE>(
+            mask, img_src, img_dst, patchsize, IMG_DIMS_SRC, IMG_DIMS_DST,
+            nnf, searchradius, searchstep, includeself, nnk, threshold);
+            break;
 
             case 3:
-            {
-#ifdef __PARALLEL__
-                #pragma omp parallel for shared(IMG_DIMS_SRC, IMG_DIMS_DST, nnf, img_src, img_dst, searchradius, patchsize, searchstep, mask, nelems, threshold)
-#endif
-
-                for(DATA_TYPE sj=0; sj<=max_Y; ++sj)
-                {
-                    for(DATA_TYPE si=0; si<=max_X; ++si)
-                    {
-                        DATA_TYPE startx, starty, endx, endy;
-                        DATA_TYPE Ms = IMG_DIMS_SRC[0], Ns = IMG_DIMS_SRC[1];
-                        DATA_TYPE Mt = IMG_DIMS_DST[0], Nt = IMG_DIMS_DST[1];
-                        vector<pxpair> pxall;
-                        vector<double> distall;
-                        double curr_dist, thresh = threshold;
-
-                        startx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])-searchradius;
-                        startx = (startx>0)?startx: 0;
-                        starty = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])-searchradius;
-                        starty = (starty>0)?starty: 0;
-
-                        endx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])+searchradius;
-                        endx = (endx<(Mt-patchsize[0]))?endx: (Mt-patchsize[0]);
-                        endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
-                        endy = (endy<(Nt-patchsize[1]))?endy: (Nt-patchsize[1]);
-
-                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
-                        {
-                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
-                            {
-                                if(si!=ni || sj!=nj||includeself)
-                                {
-                                    curr_dist = blockmatchcolori(si, sj, ni, nj, mask, img_src, img_dst, patchsize, Ms, Ns, Mt, Nt, thresh);
-                                    //mexPrintf("Source: (%Ld, %Ld) || Target: (%Ld, %Ld) || Dist: %f\n", si, sj, ni, nj, curr_dist);
-                                    pxpair curr_px = {ni, nj};
-                                    pxall.push_back(curr_px);
-                                    distall.push_back(curr_dist);
-                                }
-                            }
-                        }
-
-                        //sort and take 1st few
-                        vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
-
-                        DATA_TYPE n = 0;
-                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
-                        sort(order.begin(), order.end(), ordering());
-
-                        vector<double> sorted_distall = sort_from_ref(distall, order);
-                        vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
-                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
-                        for(DATA_TYPE l=0; l<lmax; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
-                        }
-                        for(DATA_TYPE l=lmax; l<nnk; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
-                        }
-                    }
-                }
-                break;
-            }
+            func<CostType::L2, NumLayers::MULTI>(
+            mask, img_src, img_dst, patchsize, IMG_DIMS_SRC, IMG_DIMS_DST,
+            nnf, searchradius, searchstep, includeself, nnk, threshold);
+            break;
 
             default:
             {
@@ -1328,144 +1349,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             switch(IMG_DIMS_SRC[2])
             {
             case 1:
-            {
-#ifdef __PARALLEL__
-                #pragma omp parallel for shared(IMG_DIMS_SRC, IMG_DIMS_DST, nnf, img_src, img_dst, searchradius, patchsize, searchstep, mask, nelems, threshold)
-#endif
-
-                for(DATA_TYPE sj=0; sj<=max_Y; ++sj)
-                {
-                    for(DATA_TYPE si=0; si<=max_X; ++si)
-                    {
-                        DATA_TYPE startx, starty, endx, endy;
-                        DATA_TYPE Ms = IMG_DIMS_SRC[0], Ns = IMG_DIMS_SRC[1];
-                        DATA_TYPE Mt = IMG_DIMS_DST[0], Nt = IMG_DIMS_DST[1];
-                        vector<pxpair> pxall;
-                        vector<double> distall;
-                        double curr_dist, thresh = threshold;
-
-                        startx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])-searchradius;
-                        startx = (startx>0)?startx: 0;
-                        starty = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])-searchradius;
-                        starty = (starty>0)?starty: 0;
-
-                        endx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])+searchradius;
-                        endx = (endx<(Mt-patchsize[0]))?endx: (Mt-patchsize[0]);
-                        endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
-                        endy = (endy<(Nt-patchsize[1]))?endy: (Nt-patchsize[1]);
-
-                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
-                        {
-                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
-                            {
-                                if(si!=ni || sj!=nj||includeself)
-                                {
-                                    curr_dist = blockmatchgrayi_one(si, sj, ni, nj, mask, img_src, img_dst, patchsize, Ms, Ns, Mt, Nt, thresh);
-                                    //mexPrintf("Source: (%Ld, %Ld) || Target: (%Ld, %Ld) || Dist: %f\n", si, sj, ni, nj, curr_dist);
-                                    pxpair curr_px = {ni, nj};
-                                    pxall.push_back(curr_px);
-                                    distall.push_back(curr_dist);
-                                }
-                            }
-                        }
-
-                        //sort and take 1st few
-                        vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
-
-                        DATA_TYPE n = 0;
-                        for (vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
-                        sort(order.begin(), order.end(), ordering());
-
-                        vector<double> sorted_distall = sort_from_ref(distall, order);
-                        vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
-                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
-                        for(DATA_TYPE l=0; l<lmax; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
-                        }
-                        for(int l=lmax; l<nnk; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
-                        }
-                    }
-                }
-                break;
-            }
+            func<CostType::L1, NumLayers::SINGLE>(
+            mask, img_src, img_dst, patchsize, IMG_DIMS_SRC, IMG_DIMS_DST,
+            nnf, searchradius, searchstep, includeself, nnk, threshold);
+            break;
 
             case 3:
-            {
-#ifdef __PARALLEL__
-                #pragma omp parallel for shared(IMG_DIMS_SRC, IMG_DIMS_DST, nnf, img_src, img_dst, searchradius, patchsize, searchstep, mask, nelems, threshold)
-#endif
-
-                for(DATA_TYPE sj=0; sj<=max_Y; ++sj)
-                {
-                    for(DATA_TYPE si=0; si<=max_X; ++si)
-                    {
-                        DATA_TYPE startx, starty, endx, endy;
-                        DATA_TYPE Ms = IMG_DIMS_SRC[0], Ns = IMG_DIMS_SRC[1];
-                        DATA_TYPE Mt = IMG_DIMS_DST[0], Nt = IMG_DIMS_DST[1];
-                        vector<pxpair> pxall;
-                        vector<double> distall;
-                        double curr_dist, thresh = threshold;
-
-                        startx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])-searchradius;
-                        startx = (startx>0)?startx: 0;
-                        starty = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])-searchradius;
-                        starty = (starty>0)?starty: 0;
-
-                        endx = ((si*IMG_DIMS_DST[0])/IMG_DIMS_SRC[0])+searchradius;
-                        endx = (endx<(Mt-patchsize[0]))?endx: (Mt-patchsize[0]);
-                        endy = ((sj*IMG_DIMS_DST[1])/IMG_DIMS_SRC[1])+searchradius;
-                        endy = (endy<(Nt-patchsize[1]))?endy: (Nt-patchsize[1]);
-
-                        for(DATA_TYPE nj=starty; nj<=endy; nj+=searchstep)
-                        {
-                            for(DATA_TYPE ni=startx; ni<=endx; ni+=searchstep)
-                            {
-                                if(si!=ni || sj!=nj||includeself)
-                                {
-                                    curr_dist = blockmatchcolori_one(si, sj, ni, nj, mask, img_src, img_dst, patchsize, Ms, Ns, Mt, Nt, thresh);
-                                    //mexPrintf("Source: (%Ld, %Ld) || Target: (%Ld, %Ld) || Dist: %f\n", si, sj, ni, nj, curr_dist);
-                                    pxpair curr_px = {ni, nj};
-                                    pxall.push_back(curr_px);
-                                    distall.push_back(curr_dist);
-                                }
-                            }
-                        }
-
-                        //sort and take 1st few
-                        vector<pair<DATA_TYPE, vecdoubleiter> > order(distall.size());
-
-                        DATA_TYPE n = 0;
-                        for(vecdoubleiter it = distall.begin(); it != distall.end(); ++it, ++n) order[n] = make_pair(n, it);
-                        sort(order.begin(), order.end(), ordering());
-
-                        vector<double> sorted_distall = sort_from_ref(distall, order);
-                        vector<pxpair> sorted_pxall = sort_from_ref(pxall, order);
-                        DATA_TYPE lmax = (nnk<static_cast<DATA_TYPE>(sorted_distall.size()))? nnk: static_cast<DATA_TYPE>(sorted_distall.size());
-                        DATA_TYPE lidx = si+sj*IMG_DIMS_SRC[0];
-                        for(DATA_TYPE l=0; l<lmax; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = sorted_pxall[l].y;
-                            nnf[lidx+(l*3+1)*nelems] = sorted_pxall[l].x;
-                            nnf[lidx+(l*3+2)*nelems] = static_cast<int32_t>(sorted_distall[l]);
-                        }
-                        for(DATA_TYPE l=lmax; l<nnk; ++l)
-                        {
-                            nnf[lidx+l*3*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+1)*nelems] = LNEG_VAL;
-                            nnf[lidx+(l*3+2)*nelems] = LPOS_VAL;
-                        }
-                    }
-                }
-                break;
-            }
+            func<CostType::L1, NumLayers::MULTI>(
+            mask, img_src, img_dst, patchsize, IMG_DIMS_SRC, IMG_DIMS_DST,
+            nnf, searchradius, searchstep, includeself, nnk, threshold);
+            break;
 
             default:
             {
@@ -1537,555 +1430,4 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     delete []mask;
 }
 
-
-__inline double blockmatchgray(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
-{
-    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti;
-    double dist = 0.0;
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            dist += mask[i][j]*(img_src[src_idx+i]-img_dst[tgt_idx+i])*(img_src[src_idx+i]-img_dst[tgt_idx+i]);
-            //mexPrintf("(si, sj) = (%d, %d), (ti, tj) = (%d, %d),|| i = %d, j= %d, || sval = %f, tval = %f, dist = %f\n", si,sj,ti,tj, i,j,img[src_idx+i],img[tgt_idx+i], (img[src_idx+i]-img[tgt_idx+i])*(img[src_idx+i]-img[tgt_idx+i]));
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-    return dist;
-}
-
-__inline double blockmatchcolor(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
-{
-    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti, numels_src = imgsM*imgsN, numels_dst = imgtM*imgtN;
-    double dist = 0.0;
-    /* channel R */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            dist += mask[i][j]*(img_src[src_idx+i]-img_dst[tgt_idx+i])*(img_src[src_idx+i]-img_dst[tgt_idx+i]);
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-
-    /* channel G */
-    src_idx = sj*imgsM+si+numels_src;
-    tgt_idx = tj*imgtM+ti+numels_dst; /* shift to the next layer */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            dist += mask[i][j]*(img_src[src_idx+i]-img_dst[tgt_idx+i])*(img_src[src_idx+i]-img_dst[tgt_idx+i]);
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-
-    /* channel B */
-    src_idx = sj*imgsM+si+2*numels_src;
-    tgt_idx = tj*imgtM+ti+2*numels_dst; /* shift to the next layer */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            dist += mask[i][j]*(img_src[src_idx+i]-img_dst[tgt_idx+i])*(img_src[src_idx+i]-img_dst[tgt_idx+i]);
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-    return dist;
-}
-
-
-
-__inline double blockmatchgray_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
-{
-    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti;
-    double dist = 0.0;
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            dist += mask[i][j]*fabs(img_src[src_idx+i]-img_dst[tgt_idx+i]);
-            //mexPrintf("(si, sj) = (%d, %d), (ti, tj) = (%d, %d),|| i = %d, j= %d, || sval = %f, tval = %f, dist = %f\n", si,sj,ti,tj, i,j,img[src_idx+i],img[tgt_idx+i], (img[src_idx+i]-img[tgt_idx+i])*(img[src_idx+i]-img[tgt_idx+i]));
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-    return dist;
-}
-
-__inline double blockmatchcolor_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
-{
-    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti, numels_src = imgsM*imgsN, numels_dst = imgtM*imgtN;
-    double dist = 0.0;
-    /* channel R */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            dist += mask[i][j]*fabs(img_src[src_idx+i]-img_dst[tgt_idx+i]);
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-
-    /* channel G */
-    src_idx = sj*imgsM+si+numels_src;
-    tgt_idx = tj*imgtM+ti+numels_dst; /* shift to the next layer */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            dist += mask[i][j]*fabs(img_src[src_idx+i]-img_dst[tgt_idx+i]);
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-
-    /* channel B */
-    src_idx = sj*imgsM+si+2*numels_src;
-    tgt_idx = tj*imgtM+ti+2*numels_dst; /* shift to the next layer */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            dist += mask[i][j]*fabs(img_src[src_idx+i]-img_dst[tgt_idx+i]);
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-    return dist;
-}
-
-
-__inline double blockmatchgray_cmu(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
-{
-    DATA_TYPE i, j, src_idx = sj*imgsM+si, p_m_one[2] = {patchsize[0]-1, patchsize[1]-1};
-    double dist = 0.0, tempxx, tempxy, tempyy;
-    double s_C[3] = {0,0,0};
-
-    //calculate Cs
-    src_idx = sj*imgsM+si;
-
-    for(j=0; j<p_m_one[1]; ++j)
-    {
-        for(i=0; i<p_m_one[0]; ++i)
-        {
-            s_C[0] += (img_src[src_idx+i+1]-img_src[src_idx+i])*(img_src[src_idx+i+1]-img_src[src_idx+i]); //along x
-            s_C[1] += (img_src[src_idx+i+imgsM]-img_src[src_idx+i])*(img_src[src_idx+i+imgsM]-img_src[src_idx+i]); //along y
-            s_C[2] += (img_src[src_idx+i+1]-img_src[src_idx+i])*(img_src[src_idx+i+imgsM]-img_src[src_idx+i]); //along x-y
-
-        }
-
-        src_idx += imgsM+1;
-    }
-
-    s_C[0] = (s_C[0])/(p_m_one[0]*p_m_one[1]);
-    s_C[1] = (s_C[1])/(p_m_one[0]*p_m_one[1]);
-    s_C[2] = (s_C[2])/(p_m_one[0]*p_m_one[1]);
-    tempxx = static_cast<double>(si-ti); tempxx *= tempxx;
-    tempyy = static_cast<double>(sj-tj); tempyy *= tempyy;
-    tempxy = static_cast<double>(si-ti); tempxy *= static_cast<double>(sj-tj);
-
-
-    dist = s_C[0]*tempxx+s_C[1]*tempyy+2*s_C[2]*tempxy;
-    //mexPrintf("(si, sj) = (%d, %d), (ti, tj) = (%d, %d),|| i = %d, j= %d, || sval = %f, tval = %f, dist = %f\n", si,sj,ti,tj, i,j,img[src_idx+i],img[tgt_idx+i], (img[src_idx+i]-img[tgt_idx+i])*(img[src_idx+i]-img[tgt_idx+i]));
-    return dist;
-}
-
-__inline double blockmatchcolor_cmu(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
-{
-    DATA_TYPE i, j, src_idx = sj*imgsM+si, p_m_one[2] = {patchsize[0]-1,patchsize[1]-1}, numels = imgsM*imgsN;
-    double dist = 0.0, tempxx, tempxy, tempyy;
-    double s_C[3][3] = {{0,0,0},{0,0,0},{0,0,0}};
-
-    //for R channel
-
-    //calculate Cs
-    for(j=0; j<p_m_one[1]; ++j)
-    {
-        for(i=0; i<p_m_one[0]; ++i)
-        {
-            s_C[0][0] += (img_src[src_idx+i+1]-img_src[src_idx+i])*(img_src[src_idx+i+1]-img_src[src_idx+i]); //along x
-            s_C[0][1] += (img_src[src_idx+i+imgsM]-img_src[src_idx+i])*(img_src[src_idx+i+imgsM]-img_src[src_idx+i]); //along y
-            s_C[0][2] += (img_src[src_idx+i+1]-img_src[src_idx+i])*(img_src[src_idx+i+imgsM]-img_src[src_idx+i]); //along x-y
-
-        }
-        src_idx += imgsM+1;
-    }
-
-    s_C[0][0] = (s_C[0][0])/(p_m_one[0]*p_m_one[1]);
-    s_C[0][1] = (s_C[0][1])/(p_m_one[0]*p_m_one[1]);
-    s_C[0][2] = (s_C[0][2])/(p_m_one[0]*p_m_one[1]);
-
-    //for G channel
-    src_idx = sj*imgsM+si+numels; /* shift to the next layer */
-
-    //calculate Cs
-    for(j=0; j<p_m_one[1]; ++j)
-    {
-        for(i=0; i<p_m_one[0]; ++i)
-        {
-            s_C[1][0] += (img_src[src_idx+i+1]-img_src[src_idx+i])*(img_src[src_idx+i+1]-img_src[src_idx+i]); //along x
-            s_C[1][1] += (img_src[src_idx+i+imgsM]-img_src[src_idx+i])*(img_src[src_idx+i+imgsM]-img_src[src_idx+i]); //along y
-            s_C[1][2] += (img_src[src_idx+i+1]-img_src[src_idx+i])*(img_src[src_idx+i+imgsM]-img_src[src_idx+i]); //along x-y
-
-        }
-        src_idx += imgsM+1;
-    }
-
-    s_C[1][0] = (s_C[1][0])/(p_m_one[0]*p_m_one[1]);
-    s_C[1][1] = (s_C[1][1])/(p_m_one[0]*p_m_one[1]);
-    s_C[1][2] = (s_C[1][2])/(p_m_one[0]*p_m_one[1]);
-
-    //for B channel
-    src_idx = sj*imgsM+si+2*numels; /* shift to the next layer */
-
-    //calculate Cs
-    for(j=0; j<p_m_one[1]; ++j)
-    {
-        for(i=0; i<p_m_one[0]; ++i)
-        {
-            s_C[2][0] += (img_src[src_idx+i+1]-img_src[src_idx+i])*(img_src[src_idx+i+1]-img_src[src_idx+i]); //along x
-            s_C[2][1] += (img_src[src_idx+i+imgsM]-img_src[src_idx+i])*(img_src[src_idx+i+imgsM]-img_src[src_idx+i]); //along y
-            s_C[2][2] += (img_src[src_idx+i+1]-img_src[src_idx+i])*(img_src[src_idx+i+imgsM]-img_src[src_idx+i]); //along x-y
-        }
-        src_idx += imgsM+1;
-    }
-
-    s_C[2][0] = (s_C[2][0])/(p_m_one[0]*p_m_one[1]);
-    s_C[2][1] = (s_C[2][1])/(p_m_one[0]*p_m_one[1]);
-    s_C[2][2] = (s_C[2][2])/(p_m_one[0]*p_m_one[1]);
-
-    tempxx = static_cast<double>(si-ti); tempxx *= tempxx;
-    tempyy = static_cast<double>(sj-tj); tempyy *= tempyy;
-    tempxy = static_cast<double>(si-ti); tempxy *= static_cast<double>(sj-tj);
-
-    dist = (s_C[0][0]+s_C[1][0]+s_C[2][0])*tempxx+(s_C[0][1]+s_C[1][1]+s_C[2][1])*tempyy+2*(s_C[0][2]+s_C[1][2]+s_C[2][2])*tempxy;
-    //mexPrintf("(si, sj) = (%d, %d), (ti, tj) = (%d, %d),|| i = %d, j= %d, || sval = %f, tval = %f, dist = %f\n", si,sj,ti,tj, i,j,img[src_idx+i],img[tgt_idx+i], (img[src_idx+i]-img[tgt_idx+i])*(img[src_idx+i]-img[tgt_idx+i]));
-
-    return dist;
-}
-
-
-
-__inline double blockmatchgray_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
-{
-    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti;
-    double dist = 0.0;
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            dist += mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
-            //mexPrintf("(si, sj) = (%d, %d), (ti, tj) = (%d, %d),|| i = %d, j= %d, || sval = %f, tval = %f, dist = %f\n", si,sj,ti,tj, i,j,img[src_idx+i],img[tgt_idx+i], (img[src_idx+i]-img[tgt_idx+i])*(img[src_idx+i]-img[tgt_idx+i]));
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-    return dist;
-}
-
-__inline double blockmatchcolor_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN)
-{
-    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti, numels_src = imgsM*imgsN, numels_dst = imgtM*imgtN;
-    double dist = 0.0;
-    /* channel R */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            dist += mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-
-    /* channel G */
-    src_idx = sj*imgsM+si+numels_src;
-    tgt_idx = tj*imgtM+ti+numels_dst; /* shift to the next layer */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            dist += mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-
-    /* channel B */
-    src_idx = sj*imgsM+si+2*numels_src;
-    tgt_idx = tj*imgtM+ti+2*numels_dst; /* shift to the next layer */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            dist += mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-    return dist;
-}
-
-
-
-
-__inline double blockmatchgrayi(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN, double threshold)
-{
-    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti;
-    double dist = 0.0, den = 0, temp;
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            temp = (img_src[src_idx+i]-img_dst[tgt_idx+i])*(img_src[src_idx+i]-img_dst[tgt_idx+i]);
-            if(!isnan(temp))
-            {
-                dist += mask[i][j]*temp;
-                den += mask[i][j];
-            }
-            //mexPrintf("(si, sj) = (%d, %d), (ti, tj) = (%d, %d),|| i = %d, j= %d, || sval = %f, tval = %f, dist = %f\n", si,sj,ti,tj, i,j,img[src_idx+i],img[tgt_idx+i], (img[src_idx+i]-img[tgt_idx+i])*(img[src_idx+i]-img[tgt_idx+i]));
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-    dist /= den;
-    if(den<=threshold) dist = static_cast<double>(LPOS_VAL);
-    return dist;
-}
-
-__inline double blockmatchcolori(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN, double threshold)
-{
-    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti, numels_src = imgsM*imgsN, numels_dst = imgtM*imgtN;
-    double dist = 0.0, den = 0.0, temp;
-    /* channel R */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            temp = mask[i][j]*(img_src[src_idx+i]-img_dst[tgt_idx+i])*(img_src[src_idx+i]-img_dst[tgt_idx+i]);
-            if(!isnan(temp))
-            {
-                dist += mask[i][j]*temp;
-                den += mask[i][j];
-            }
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-
-    /* channel G */
-    src_idx = sj*imgsM+si+numels_src;
-    tgt_idx = tj*imgtM+ti+numels_dst; /* shift to the next layer */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            temp = mask[i][j]*(img_src[src_idx+i]-img_dst[tgt_idx+i])*(img_src[src_idx+i]-img_dst[tgt_idx+i]);
-            if(!isnan(temp))
-            {
-                dist += mask[i][j]*temp;
-                den += mask[i][j];
-            }
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-
-    /* channel B */
-    src_idx = sj*imgsM+si+2*numels_src;
-    tgt_idx = tj*imgtM+ti+2*numels_dst; /* shift to the next layer */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            temp = mask[i][j]*(img_src[src_idx+i]-img_dst[tgt_idx+i])*(img_src[src_idx+i]-img_dst[tgt_idx+i]);
-            if(!isnan(temp))
-            {
-                dist += mask[i][j]*temp;
-                den += mask[i][j];
-            }
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-    dist /= den;
-    if(den<=threshold) dist = static_cast<double>(LPOS_VAL);
-    return dist;
-}
-
-
-__inline double blockmatchgrayi_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN, double threshold)
-{
-    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti;
-    double dist = 0.0, den = 0.0, temp;
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            temp = fabs(img_src[src_idx+i]-img_dst[tgt_idx+i]);
-            if(!isnan(temp))
-            {
-                dist += mask[i][j]*temp;
-                den += mask[i][j];
-            }
-            //mexPrintf("(si, sj) = (%d, %d), (ti, tj) = (%d, %d),|| i = %d, j= %d, || sval = %f, tval = %f, dist = %f\n", si,sj,ti,tj, i,j,img[src_idx+i],img[tgt_idx+i], (img[src_idx+i]-img[tgt_idx+i])*(img[src_idx+i]-img[tgt_idx+i]));
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-    dist /= den;
-    if(den<=threshold) dist = static_cast<double>(LPOS_VAL);
-    return dist;
-}
-
-__inline double blockmatchcolori_one(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN, double threshold)
-{
-    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti, numels_src = imgsM*imgsN, numels_dst = imgtM*imgtN;
-    double dist = 0.0, den = 0.0, temp;
-    /* channel R */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            temp = mask[i][j]*fabs(img_src[src_idx+i]-img_dst[tgt_idx+i]);
-            if(!isnan(temp))
-            {
-                dist += mask[i][j]*temp;
-                den += mask[i][j];
-            }
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-
-    /* channel G */
-    src_idx = sj*imgsM+si+numels_src;
-    tgt_idx = tj*imgtM+ti+numels_dst; /* shift to the next layer */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            temp = mask[i][j]*fabs(img_src[src_idx+i]-img_dst[tgt_idx+i]);
-            if(!isnan(temp))
-            {
-                dist += mask[i][j]*temp;
-                den += mask[i][j];
-            }
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-
-    /* channel B */
-    src_idx = sj*imgsM+si+2*numels_src;
-    tgt_idx = tj*imgtM+ti+2*numels_dst; /* shift to the next layer */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            temp = mask[i][j]*fabs(img_src[src_idx+i]-img_dst[tgt_idx+i]);
-            if(!isnan(temp))
-            {
-                dist += mask[i][j]*temp;
-                den += mask[i][j];
-            }
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-    dist /= den;
-    if(den<=threshold) dist = static_cast<double>(LPOS_VAL);
-    return dist;
-}
-
-
-__inline double blockmatchgrayi_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN, double threshold)
-{
-    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti;
-    double dist = 0.0, den = 0.0, temp;
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            temp = (lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
-            if(!isnan(temp))
-            {
-                dist += mask[i][j]*temp;
-                den += mask[i][j];
-            }
-            //mexPrintf("(si, sj) = (%d, %d), (ti, tj) = (%d, %d),|| i = %d, j= %d, || sval = %f, tval = %f, dist = %f\n", si,sj,ti,tj, i,j,img[src_idx+i],img[tgt_idx+i], (img[src_idx+i]-img[tgt_idx+i])*(img[src_idx+i]-img[tgt_idx+i]));
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-    dist /= den;
-    if(den<=threshold) dist = static_cast<double>(LPOS_VAL);
-    return dist;
-}
-
-__inline double blockmatchcolori_poisson(DATA_TYPE si, DATA_TYPE sj, DATA_TYPE ti, DATA_TYPE tj, double **mask, double *img_src, double *img_dst, DATA_TYPE *patchsize, DATA_TYPE imgsM, DATA_TYPE imgsN, DATA_TYPE imgtM, DATA_TYPE imgtN, double threshold)
-{
-    DATA_TYPE i, j, src_idx = sj*imgsM+si, tgt_idx = tj*imgtM+ti, numels_src = imgsM*imgsN, numels_dst = imgtM*imgtN;
-    double dist = 0.0, den = 0.0, temp;
-    /* channel R */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            temp = mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
-            if(!isnan(temp))
-            {
-                dist += mask[i][j]*temp;
-                den += mask[i][j];
-            }
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-
-    /* channel G */
-    src_idx = sj*imgsM+si+numels_src;
-    tgt_idx = tj*imgtM+ti+numels_dst; /* shift to the next layer */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            temp = mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
-            if(!isnan(temp))
-            {
-                dist += mask[i][j]*temp;
-                den += mask[i][j];
-            }
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-
-    /* channel B */
-    src_idx = sj*imgsM+si+2*numels_src;
-    tgt_idx = tj*imgtM+ti+2*numels_dst; /* shift to the next layer */
-    for(j=0; j<patchsize[1]; ++j)
-    {
-        for(i=0; i<patchsize[0]; ++i)
-        {
-            temp = mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
-            if(!isnan(temp))
-            {
-                dist += mask[i][j]*temp;
-                den += mask[i][j];
-            }
-        }
-        src_idx += imgsM;
-        tgt_idx += imgtM;
-    }
-    dist /= den;
-    if(den<=threshold) dist = static_cast<double>(LPOS_VAL);
-    return dist;
-}
 
