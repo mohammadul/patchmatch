@@ -61,6 +61,22 @@ struct pxpair
 #define min(x, y) ((x)<(y)?(x):(y))
 #endif
 
+/* (-0.06432142068211566+(s)*1.522888134780505+(s)*(s)*-0.4851696063969466) */
+
+template <typename T>
+__inline T gapprox(T s) /* gamma approximated */
+{
+    return (-2.061134883172860/((s-0.042820630947894)*(s-3.09605722681828)));
+}
+
+/* (-1.793304391995467+(s)*2.651503596311144+(s)*(s)*-0.8599428008731907) */
+
+template <typename T>
+__inline T lapprox(T s) /* log approximated */
+{
+    return (-0.85994280087319*(s-1.00187482340903)*(s-2.0814739686488));
+}
+
 typedef vector<DATA_TYPE>::const_iterator vecintiter;
 typedef vector<double>::const_iterator vecdoubleiter;
 struct ordering
@@ -117,13 +133,13 @@ __inline double blockmatch<CostType::POISSON, NumLayers::SINGLE>(
     {
         for(i=0; i<patchsize[0]; ++i)
         {
-            dist += mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
+            dist += mask[i][j]*lapprox(gapprox(0.00390625*(img_src[src_idx+i]+img_dst[tgt_idx+i])+0.5)/sqrt(gapprox(0.00390625*(2*img_src[src_idx+i])+0.5)*gapprox(0.00390625*(2*img_dst[tgt_idx+i])+0.5)));
             //mexPrintf("(si, sj) = (%d, %d), (ti, tj) = (%d, %d),|| i = %d, j= %d, || sval = %f, tval = %f, dist = %f\n", si,sj,ti,tj, i,j,img[src_idx+i],img[tgt_idx+i], (img[src_idx+i]-img[tgt_idx+i])*(img[src_idx+i]-img[tgt_idx+i]));
         }
         src_idx += imgsM;
         tgt_idx += imgtM;
     }
-    return dist;
+    return -dist*256.0;
 }
 
 
@@ -141,7 +157,7 @@ __inline double blockmatch<CostType::POISSON, NumLayers::MULTI>(
     {
         for(i=0; i<patchsize[0]; ++i)
         {
-            dist += mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
+            dist += mask[i][j]*lapprox(gapprox(0.00390625*(img_src[src_idx+i]+img_dst[tgt_idx+i])+0.5)/sqrt(gapprox(0.00390625*(2*img_src[src_idx+i])+0.5)*gapprox(0.00390625*(2*img_dst[tgt_idx+i])+0.5)));
         }
         src_idx += imgsM;
         tgt_idx += imgtM;
@@ -154,7 +170,7 @@ __inline double blockmatch<CostType::POISSON, NumLayers::MULTI>(
     {
         for(i=0; i<patchsize[0]; ++i)
         {
-            dist += mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
+            dist += mask[i][j]*lapprox(gapprox(0.00390625*(img_src[src_idx+i]+img_dst[tgt_idx+i])+0.5)/sqrt(gapprox(0.00390625*(2*img_src[src_idx+i])+0.5)*gapprox(0.00390625*(2*img_dst[tgt_idx+i])+0.5)));
         }
         src_idx += imgsM;
         tgt_idx += imgtM;
@@ -167,12 +183,12 @@ __inline double blockmatch<CostType::POISSON, NumLayers::MULTI>(
     {
         for(i=0; i<patchsize[0]; ++i)
         {
-            dist += mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
+            dist += mask[i][j]*lapprox(gapprox(0.00390625*(img_src[src_idx+i]+img_dst[tgt_idx+i])+0.5)/sqrt(gapprox(0.00390625*(2*img_src[src_idx+i])+0.5)*gapprox(0.00390625*(2*img_dst[tgt_idx+i])+0.5)));
         }
         src_idx += imgsM;
         tgt_idx += imgtM;
     }
-    return dist;
+    return -dist*256.0;
 }
 
 
@@ -733,7 +749,7 @@ __inline double blockmatch<CostType::POISSON, NumLayers::SINGLE>(
     {
         for(i=0; i<patchsize[0]; ++i)
         {
-            temp = (lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
+            temp = lapprox(gapprox(0.00390625*(img_src[src_idx+i]+img_dst[tgt_idx+i])+0.5)/sqrt(gapprox(0.00390625*(2*img_src[src_idx+i])+0.5)*gapprox(0.00390625*(2*img_dst[tgt_idx+i])+0.5)));
             if(!isnan(temp))
             {
                 dist += mask[i][j]*temp;
@@ -744,9 +760,9 @@ __inline double blockmatch<CostType::POISSON, NumLayers::SINGLE>(
         src_idx += imgsM;
         tgt_idx += imgtM;
     }
-    dist /= den;
+    dist /= -den;
     if(den<=threshold) dist = static_cast<double>(LPOS_VAL);
-    return dist;
+    return dist*256.0;
 }
 
 template <>
@@ -763,7 +779,7 @@ __inline double blockmatch<CostType::POISSON, NumLayers::MULTI>(
     {
         for(i=0; i<patchsize[0]; ++i)
         {
-            temp = mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
+            temp = mask[i][j]*lapprox(gapprox(0.00390625*(img_src[src_idx+i]+img_dst[tgt_idx+i])+0.5)/sqrt(gapprox(0.00390625*(2*img_src[src_idx+i])+0.5)*gapprox(0.00390625*(2*img_dst[tgt_idx+i])+0.5)));
             if(!isnan(temp))
             {
                 dist += mask[i][j]*temp;
@@ -781,7 +797,7 @@ __inline double blockmatch<CostType::POISSON, NumLayers::MULTI>(
     {
         for(i=0; i<patchsize[0]; ++i)
         {
-            temp = mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
+            temp = mask[i][j]*lapprox(gapprox(0.00390625*(img_src[src_idx+i]+img_dst[tgt_idx+i])+0.5)/sqrt(gapprox(0.00390625*(2*img_src[src_idx+i])+0.5)*gapprox(0.00390625*(2*img_dst[tgt_idx+i])+0.5)));
             if(!isnan(temp))
             {
                 dist += mask[i][j]*temp;
@@ -799,7 +815,7 @@ __inline double blockmatch<CostType::POISSON, NumLayers::MULTI>(
     {
         for(i=0; i<patchsize[0]; ++i)
         {
-            temp = mask[i][j]*(lgamma(img_src[src_idx+i]+img_dst[tgt_idx+i]+0.5)/sqrt(lgamma(2*img_src[src_idx+i]+0.5)*lgamma(2*img_dst[tgt_idx+i]+0.5)));
+            temp = mask[i][j]*lapprox(gapprox(0.00390625*(img_src[src_idx+i]+img_dst[tgt_idx+i])+0.5)/sqrt(gapprox(0.00390625*(2*img_src[src_idx+i])+0.5)*gapprox(0.00390625*(2*img_dst[tgt_idx+i])+0.5)));
             if(!isnan(temp))
             {
                 dist += mask[i][j]*temp;
@@ -809,9 +825,9 @@ __inline double blockmatch<CostType::POISSON, NumLayers::MULTI>(
         src_idx += imgsM;
         tgt_idx += imgtM;
     }
-    dist /= den;
+    dist /= -den;
     if(den<=threshold) dist = static_cast<double>(LPOS_VAL);
-    return dist;
+    return dist*256.0;
 }
 
 template <typename T, typename U>
